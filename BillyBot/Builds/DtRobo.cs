@@ -38,19 +38,38 @@ public class DtRobo : ProtossSharkyBuild
         //TODO: ta 1 gas før nexus, vent med chrono, worker count stop?
         
         BuildOptions.StrictGasCount = true;
+
+
         hasCreatedGateway = UnitCountService.Completed(UnitTypes.PROTOSS_GATEWAY) > 0;
+
+        BuildOptions.StrictGasCount = true;
+
+
+
+        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_PYLON) == 1)
+        {
+            MacroData.DesiredGases = 1;
+            if(!(UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_CYBERNETICSCORE) > 0)) { 
+               MacroData.DesiredPylons = 1;
+            }
+        }
+
         if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_CYBERNETICSCORE) > 0)
         {
             BuildOptions.StrictGasCount = false;
+            BuildOptions.StrictSupplyCount = false;
         }
 
-        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_PYLON) == 1)
-            MacroData.DesiredTechCounts[UnitTypes.PROTOSS_ASSIMILATOR] = 1;
+
 
         MacroData.DesiredUpgrades[Upgrades.WARPGATERESEARCH] = true;
         
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = 1;
+
+
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_NEXUS] = 2;
+        
+
         MacroData.DesiredTechCounts[UnitTypes.PROTOSS_CYBERNETICSCORE] = 1;
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 1;
         MacroData.DesiredTechCounts[UnitTypes.PROTOSS_TWILIGHTCOUNCIL] = 1;
