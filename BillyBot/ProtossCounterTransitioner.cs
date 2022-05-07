@@ -17,7 +17,7 @@ public class ProtossCounterTransitioner : ICounterTransitioner
 
     public List<string> DefaultCounterTransition(int frame)
     {
-        if (EnemyData.EnemyStrategies["ZerglingRush"].Active && frame < SharkyOptions.FramesPerSecond * 3 * 60) return new() {"ZealotRush"};
+        // if (EnemyData.EnemyStrategies["ZerglingRush"].Active && frame < SharkyOptions.FramesPerSecond * 3 * 60) return new() {"ZealotRush"};
 
         return null;
     }
