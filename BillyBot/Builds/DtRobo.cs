@@ -15,6 +15,8 @@ public class DtRobo : ProtossSharkyBuild
     public override void StartBuild(int frame)
     {
         base.StartBuild(frame);
+
+        BuildOptions.StrictSupplyCount = true;
         
         ChronoData.ChronodUnits = new()
         {
@@ -32,43 +34,30 @@ public class DtRobo : ProtossSharkyBuild
         // };
     }
 
-    private bool hasCreatedGateway = false;
     public override void OnFrame(ResponseObservation observation)
     {
         //TODO: ta 1 gas før nexus, vent med chrono, worker count stop?
+        //TODO: wait with second pylon until cyber is in progress
+
+        var frame = (int) observation.Observation.GameLoop;
+        SendProbeForFirstPylon(frame);
+        SendProbeForFirstGateway(frame);
+        SendProbeForNexus(frame);
         
-        BuildOptions.StrictGasCount = true;
-
-
-        hasCreatedGateway = UnitCountService.Completed(UnitTypes.PROTOSS_GATEWAY) > 0;
-
-        BuildOptions.StrictGasCount = true;
-
-
-
-        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_PYLON) == 1)
-        {
-            MacroData.DesiredGases = 1;
-            if(!(UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_CYBERNETICSCORE) > 0)) { 
-               MacroData.DesiredPylons = 1;
-            }
-        }
-
-        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_CYBERNETICSCORE) > 0)
-        {
-            BuildOptions.StrictGasCount = false;
+        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_CYBERNETICSCORE) == 1)
             BuildOptions.StrictSupplyCount = false;
-        }
-
-
+        if (MacroData.DesiredPylons < 1)
+            MacroData.DesiredPylons = 1;
+        
+        BuildOptions.StrictGasCount = UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_CYBERNETICSCORE) == 0;
+        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_PYLON) == 1)
+            MacroData.DesiredGases = 1;
 
         MacroData.DesiredUpgrades[Upgrades.WARPGATERESEARCH] = true;
         
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = 1;
 
-
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_NEXUS] = 2;
-        
 
         MacroData.DesiredTechCounts[UnitTypes.PROTOSS_CYBERNETICSCORE] = 1;
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 1;
