@@ -1,12 +1,10 @@
-﻿using SC2APIProtocol;
+﻿using BillyBot.Builds;
+using SC2APIProtocol;
 using Sharky;
 using Sharky.Builds;
 using Sharky.Builds.Protoss;
 using Sharky.DefaultBot;
 using Sharky.MicroControllers;
-using OneBaseCarriers = BillyBot.Builds.OneBaseCarriers;
-using ProxyVoidRay = BillyBot.Builds.ProxyVoidRay;
-using ZealotRush = BillyBot.Builds.ZealotRush;
 
 namespace BillyBot;
 
@@ -27,6 +25,7 @@ public class ProtossBuildChoices
         var robo = new Robo(defaultSharkyBot, protossCounterTransitioner);
         var nexusFirst = new NexusFirst(defaultSharkyBot, protossCounterTransitioner);
         var protossRobo = new ProtossRobo(defaultSharkyBot, protossCounterTransitioner);
+        var dtRobo = new DtRobo(defaultSharkyBot, protossCounterTransitioner);
 
         // We add all the builds to a build dictionary.  Every protoss build your bot uses must be included here.
         var builds = new Dictionary<string, ISharkyBuild>
@@ -36,7 +35,8 @@ public class ProtossBuildChoices
             [oneBaseCarriers.Name()] = oneBaseCarriers,
             [robo.Name()] = robo,
             [nexusFirst.Name()] = nexusFirst,
-            [protossRobo.Name()] = protossRobo
+            [protossRobo.Name()] = protossRobo,
+            [dtRobo.Name()] = dtRobo
         };
 
         // we create build sequences to be used by each matchup
@@ -56,6 +56,16 @@ public class ProtossBuildChoices
         {
             new() {robo.Name(), protossRobo.Name()}
         };
+
+        versusZerg = new()
+        {
+            new() {dtRobo.Name()}
+        };
+        versusEverything = new()
+        {
+            new() {dtRobo.Name()}
+        };
+
         var buildSequences = new Dictionary<string, List<List<string>>>
         {
             [Race.Terran.ToString()] = versusEverything,

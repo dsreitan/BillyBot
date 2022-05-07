@@ -14,7 +14,7 @@ var sharkyExampleBot = defaultSharkyBot.CreateBot(defaultSharkyBot.Managers, def
 var myRace = Race.Protoss;
 if (args.Length == 0)
 {
-    gameConnection.RunSinglePlayer(sharkyExampleBot, @"2000AtmospheresAIE.SC2Map", myRace, Race.Random, Difficulty.VeryHard, AIBuild.RandomBuild).Wait();
+    gameConnection.RunSinglePlayer(sharkyExampleBot, @"2000AtmospheresAIE.SC2Map", myRace, Race.Zerg, Difficulty.VeryHard, AIBuild.RandomBuild).Wait();
 }
 else
 {
