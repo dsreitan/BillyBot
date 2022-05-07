@@ -8,7 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SharkyProtossExampleBot\SharkyProtossExampleBot.csproj" />
       <ProjectReference Include="..\Sharky\Sharky.csproj" />
     </ItemGroup>
 

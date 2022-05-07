@@ -3,61 +3,51 @@ using Sharky;
 using Sharky.Builds;
 using Sharky.Builds.BuildChoosing;
 using Sharky.DefaultBot;
-using System.Collections.Generic;
 
-namespace SharkyProtossExampleBot.Builds
+namespace BillyBot.Builds;
+
+public class ZealotRush : ProtossSharkyBuild
 {
-    public class ZealotRush : ProtossSharkyBuild
+    private bool OpeningAttackChatSent;
+
+    public ZealotRush(DefaultSharkyBot defaultSharkyBot, ICounterTransitioner counterTransitioner)
+        : base(defaultSharkyBot, counterTransitioner)
     {
-        bool OpeningAttackChatSent;
+        OpeningAttackChatSent = false;
+    }
 
-        public ZealotRush(DefaultSharkyBot defaultSharkyBot, ICounterTransitioner counterTransitioner)
-            : base(defaultSharkyBot, counterTransitioner)
+    public override void StartBuild(int frame)
+    {
+        base.StartBuild(frame);
+
+        BuildOptions.StrictGasCount = true;
+
+        MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_ZEALOT] = 100;
+
+        ChronoData.ChronodUnits = new()
         {
-            OpeningAttackChatSent = false;
+            UnitTypes.PROTOSS_ZEALOT
+        };
+    }
+
+    public override void OnFrame(ResponseObservation observation)
+    {
+        if (UnitCountService.Completed(UnitTypes.PROTOSS_PYLON) > 0)
+        {
+            if (MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] < 2) MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = 2;
         }
 
-        public override void StartBuild(int frame)
+        if (UnitCountService.Completed(UnitTypes.PROTOSS_PYLON) >= 2)
         {
-            base.StartBuild(frame);
-
-            BuildOptions.StrictGasCount = true;
-
-            MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_ZEALOT] = 100;
-
-            ChronoData.ChronodUnits = new HashSet<UnitTypes>
-            {
-                UnitTypes.PROTOSS_ZEALOT
-            };
+            if (MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] < 4) MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = 4;
         }
 
-        public override void OnFrame(ResponseObservation observation)
+        if (!OpeningAttackChatSent && MacroData.FoodArmy > 10)
         {
-            if (UnitCountService.Completed(UnitTypes.PROTOSS_PYLON) > 0)
-            {
-                if (MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] < 2)
-                {
-                    MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = 2;
-                }
-            }
-            if (UnitCountService.Completed(UnitTypes.PROTOSS_PYLON) >= 2)
-            {
-                if (MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] < 4)
-                {
-                    MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = 4;
-                }
-            }
-
-            if (!OpeningAttackChatSent && MacroData.FoodArmy > 10)
-            {
-                ChatService.SendChatType("ZealotRush-FirstAttack");
-                OpeningAttackChatSent = true;
-            }
-        }
-
-        public override List<string> CounterTransition(int frame)
-        {
-            return new List<string>();
+            ChatService.SendChatType("ZealotRush-FirstAttack");
+            OpeningAttackChatSent = true;
         }
     }
+
+    public override List<string> CounterTransition(int frame) => new();
 }

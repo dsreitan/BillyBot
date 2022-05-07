@@ -1,7 +1,7 @@
-﻿using SC2APIProtocol;
+﻿using BillyBot;
+using SC2APIProtocol;
 using Sharky;
 using Sharky.DefaultBot;
-// using SharkyProtossExampleBot;
 
 var gameConnection = new GameConnection();
 var defaultSharkyBot = new DefaultSharkyBot(gameConnection);
