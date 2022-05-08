@@ -1,12 +1,12 @@
-﻿using BillyBot.Builds;
-using BillyBot.MicroControllers;
+﻿using BillyBot.MicroControllers;
 using BillyBot.MicroTasks;
+using BillyBot.Protoss.Builds;
 using SC2APIProtocol;
 using Sharky;
 using Sharky.Builds;
 using Sharky.DefaultBot;
 
-namespace BillyBot;
+namespace BillyBot.Protoss;
 
 public class ProtossBuildChoices
 {

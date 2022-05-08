@@ -3,7 +3,7 @@ using Sharky;
 using Sharky.Builds.BuildChoosing;
 using Sharky.DefaultBot;
 
-namespace BillyBot.Builds;
+namespace BillyBot.Protoss.Builds;
 
 public class DtRobo : BaseBillyBotBuild
 {
@@ -26,7 +26,7 @@ public class DtRobo : BaseBillyBotBuild
     {
         BalancePylons();
 
-        MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = 
+        MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] =
             UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_DARKSHRINE) == 1 ? 3 : 1;
 
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_NEXUS] = 2;
@@ -35,10 +35,10 @@ public class DtRobo : BaseBillyBotBuild
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 1;
         MacroData.DesiredTechCounts[UnitTypes.PROTOSS_TWILIGHTCOUNCIL] = 1;
         MacroData.DesiredTechCounts[UnitTypes.PROTOSS_DARKSHRINE] = 1;
-        
+
         MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_DARKTEMPLAR] = 3;
         MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_WARPPRISM] = 1;
     }
-    
+
     public override bool Transition(int frame) => UnitCountService.Completed(UnitTypes.PROTOSS_DARKTEMPLAR) > 3;
 }

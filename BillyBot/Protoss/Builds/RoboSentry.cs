@@ -3,7 +3,7 @@ using Sharky;
 using Sharky.Builds.BuildChoosing;
 using Sharky.DefaultBot;
 
-namespace BillyBot.Builds;
+namespace BillyBot.Protoss.Builds;
 
 public class RoboSentry : BaseBillyBotBuild
 {
@@ -27,9 +27,9 @@ public class RoboSentry : BaseBillyBotBuild
         {
             UnitTypes.PROTOSS_IMMORTAL,
             UnitTypes.PROTOSS_OBSERVER,
-            UnitTypes.PROTOSS_WARPPRISM,
+            UnitTypes.PROTOSS_WARPPRISM
         };
-        
+
         BalancePylons();
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_NEXUS] = 3;
         MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_OBSERVER] = 1;

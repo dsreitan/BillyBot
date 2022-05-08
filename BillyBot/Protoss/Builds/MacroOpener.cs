@@ -3,7 +3,7 @@ using Sharky;
 using Sharky.Builds.BuildChoosing;
 using Sharky.DefaultBot;
 
-namespace BillyBot.Builds;
+namespace BillyBot.Protoss.Builds;
 
 public class MacroOpener : BaseBillyBotBuild
 {
