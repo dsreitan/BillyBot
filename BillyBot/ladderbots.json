@@ -1,0 +1,10 @@
+{
+  "Bots": {
+    "BillyBot": {
+      "Race": "Protoss",
+      "Type": "dotnetcore",
+      "RootPath": "./",
+      "FileName": "BillyBot.dll"
+    }
+  }
+}

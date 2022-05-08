@@ -48,6 +48,9 @@
       <None Update="StaticData\opponents\WhaleMean.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="ladderbots.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
