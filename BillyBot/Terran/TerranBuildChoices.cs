@@ -17,6 +17,7 @@ public class TerranBuildChoices
         var bansheesAndMarines = new BansheesAndMarines(defaultSharkyBot);
         var adaptiveOpening = new AdaptiveOpening(defaultSharkyBot);
         var vikingDrops = new VikingDrops(defaultSharkyBot);
+        var battleCruiserRush = new BattleCruiserRush(defaultSharkyBot);
 
         var scvMicroController = new IndividualMicroController(defaultSharkyBot, defaultSharkyBot.SharkyAdvancedPathFinder, MicroPriority.JustLive, false);
         var reaperCheese = new ReaperCheese(defaultSharkyBot, scvMicroController);
@@ -28,7 +29,8 @@ public class TerranBuildChoices
             [bansheesAndMarines.Name()] = bansheesAndMarines,
             [adaptiveOpening.Name()] = adaptiveOpening,
             [vikingDrops.Name()] = vikingDrops,
-            [reaperCheese.Name()] = reaperCheese
+            [reaperCheese.Name()] = reaperCheese,
+            [battleCruiserRush.Name()] = battleCruiserRush
         };
 
         var versusTerran = new List<List<string>>
@@ -39,9 +41,10 @@ public class TerranBuildChoices
         };
         var versusEverything = new List<List<string>>
         {
-            new() {adaptiveOpening.Name()},
-            new() {hellionRush.Name()},
-            new() {massVikings.Name()}
+            // new() {adaptiveOpening.Name()},
+            // new() {hellionRush.Name()},
+            // new() {massVikings.Name()},
+            new() {battleCruiserRush.Name()}
         };
         var transitions = new List<List<string>>
         {
