@@ -8,13 +8,15 @@ using Sharky.MicroTasks;
 
 namespace BillyBot.Terran.Builds;
 
+/// <summary>
+///     Rush battlecruisers and spend minerals on marines
+/// </summary>
 public class BattleCruiserRush : TerranSharkyBuild
 {
     private readonly ExpandForever _expandForever;
     private bool _hasCompletedBattleCruiser;
     private bool _hasCompletedHellion;
-    private bool _workerCountRestarted;
-    private bool _workerCountStopped;
+    private bool _hasStartedBattleCruiser;
 
     public BattleCruiserRush(DefaultSharkyBot defaultSharkyBot) : base(defaultSharkyBot)
     {
@@ -24,7 +26,6 @@ public class BattleCruiserRush : TerranSharkyBuild
     public override void StartBuild(int frame)
     {
         base.StartBuild(frame);
-        BuildOptions.StrictGasCount = true;
 
         MacroData.DesiredProductionCounts[UnitTypes.TERRAN_BARRACKS] = 1;
         MacroData.DesiredProductionCounts[UnitTypes.TERRAN_FACTORY] = 1;
@@ -42,41 +43,32 @@ public class BattleCruiserRush : TerranSharkyBuild
 
     public override void OnFrame(ResponseObservation observation)
     {
-        var frame = (int) observation.Observation.GameLoop;
-        var time = FrameToTimeConverter.GetTime(frame);
-
         MacroData.DesiredUnitCounts[UnitTypes.TERRAN_MARINE] = MacroData.Minerals > 500 ? 50 : 4;
 
-        StopSupplyAndWorkersUntilFactoryAndOrbital();
         CreateOneHellion();
 
-        MacroData.DesiredUnitCounts[UnitTypes.TERRAN_BATTLECRUISER] = 99;
+        BuildBattleCruisers();
 
-        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.TERRAN_SUPPLYDEPOT) > 0) MacroData.DesiredGases = 1;
-        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.TERRAN_FACTORY) > 0
-            && UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.TERRAN_ORBITALCOMMAND) > 0) MacroData.DesiredProductionCounts[UnitTypes.TERRAN_COMMANDCENTER] = 2;
-
-        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.TERRAN_ORBITALCOMMAND) > 0) BuildOptions.StrictGasCount = false;
-
-
-        if (UnitCountService.EquivalentTypeCount(UnitTypes.TERRAN_COMMANDCENTER) > 1)
-            MacroData.DesiredDefensiveBuildingsAtDefensivePoint[UnitTypes.TERRAN_BUNKER] = 1;
-
-        if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.TERRAN_FUSIONCORE) > 0)
+        // expand and tech
+        if (_hasStartedBattleCruiser)
         {
-            MacroData.DesiredAddOnCounts[UnitTypes.TERRAN_STARPORTTECHLAB] = 99;
-            MacroData.DesiredTechCounts[UnitTypes.TERRAN_ARMORY] = 1;
-        }
-
-        if (UnitCountService.UnitsDoneAndInProgressCount(UnitTypes.TERRAN_BATTLECRUISER) > 0)
-        {
+            MacroData.DesiredProductionCounts[UnitTypes.TERRAN_COMMANDCENTER] = 2;
             MacroData.DesiredUpgrades[Upgrades.TERRANSHIPWEAPONSLEVEL1] = true;
             MacroData.DesiredUpgrades[Upgrades.BATTLECRUISERENABLESPECIALIZATIONS] = true;
         }
 
-        if (UnitCountService.Completed(UnitTypes.TERRAN_BATTLECRUISER) > 0)
-            _hasCompletedBattleCruiser = true;
+        // defend natural
+        if (UnitCountService.EquivalentTypeCount(UnitTypes.TERRAN_COMMANDCENTER) > 1)
+            MacroData.DesiredDefensiveBuildingsAtDefensivePoint[UnitTypes.TERRAN_BUNKER] = 1;
 
+        // armory after fusion
+        if (ActiveUnitData.CompletedAndNearlyCompleted(UnitTypes.TERRAN_FUSIONCORE, .50f) > 0)
+        {
+            MacroData.DesiredTechCounts[UnitTypes.TERRAN_ARMORY] = 1;
+            MacroData.DesiredAddOnCounts[UnitTypes.TERRAN_STARPORTTECHLAB] = 99;
+        }
+
+        // increase production and tech
         if (_hasCompletedBattleCruiser)
         {
             MacroData.DesiredProductionCounts[UnitTypes.TERRAN_STARPORT] = 2;
@@ -93,29 +85,15 @@ public class BattleCruiserRush : TerranSharkyBuild
         _expandForever.OnFrame();
     }
 
-    private void StopSupplyAndWorkersUntilFactoryAndOrbital()
+    private void BuildBattleCruisers()
     {
-        if (_workerCountRestarted) return;
+        MacroData.DesiredUnitCounts[UnitTypes.TERRAN_BATTLECRUISER] = 99;
 
-        var shouldStop = ActiveUnitData.CompletedAndNearlyCompleted(UnitTypes.TERRAN_BARRACKS, .50f) > 0;
-        if (shouldStop)
-            _workerCountStopped = true;
+        if (UnitCountService.UnitsDoneAndInProgressCount(UnitTypes.TERRAN_BATTLECRUISER) > 0)
+            _hasStartedBattleCruiser = true;
 
-        if (!_workerCountStopped) return;
-
-        BuildOptions.StrictWorkerCount = true;
-        BuildOptions.StrictSupplyCount = true;
-        MacroData.DesiredUnitCounts[UnitTypes.TERRAN_SCV] = 0;
-        MacroData.DesiredSupplyDepots = 0;
-
-        var shouldRestart = UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.TERRAN_FACTORY) > 0
-                               && UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.TERRAN_ORBITALCOMMAND) > 0;
-
-        if (!shouldRestart) return;
-
-        _workerCountRestarted = true;
-        BuildOptions.StrictWorkerCount = false;
-        BuildOptions.StrictSupplyCount = false;
+        if (UnitCountService.Completed(UnitTypes.TERRAN_BATTLECRUISER) > 0)
+            _hasCompletedBattleCruiser = true;
     }
 
     private void CreateOneHellion()

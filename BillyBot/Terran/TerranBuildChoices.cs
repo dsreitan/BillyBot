@@ -10,16 +10,18 @@ public class TerranBuildChoices
 {
     public TerranBuildChoices(DefaultSharkyBot defaultSharkyBot)
     {
+        var techOpening = new TechOpening(defaultSharkyBot);
         var battleCruiserRush = new BattleCruiserRush(defaultSharkyBot);
 
         var builds = new Dictionary<string, ISharkyBuild>
         {
-            [battleCruiserRush.Name()] = battleCruiserRush
+            [techOpening.Name()] = techOpening,
+            [battleCruiserRush.Name()] = battleCruiserRush,
         };
 
         var versusEverything = new List<List<string>>
         {
-            new() {battleCruiserRush.Name()}
+            new() {techOpening.Name(), battleCruiserRush.Name()}
         };
 
         var buildSequences = new Dictionary<string, List<List<string>>>
