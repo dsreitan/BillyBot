@@ -1,4 +1,5 @@
 ﻿using BillyBot.Common;
+using BillyBot.Terran.Builds.BuildServices;
 using SC2APIProtocol;
 using Sharky;
 using Sharky.Builds.Terran;
@@ -8,10 +9,13 @@ namespace BillyBot.Terran.Builds;
 
 public class BattleCruiserRush : TerranSharkyBuild
 {
+    private readonly ExpandForever _expandForever;
+
     private bool _hasCompletedBattleCruiser;
 
     public BattleCruiserRush(DefaultSharkyBot defaultSharkyBot) : base(defaultSharkyBot)
     {
+        _expandForever = new(defaultSharkyBot);
     }
 
     public override void StartBuild(int frame)
@@ -84,6 +88,8 @@ public class BattleCruiserRush : TerranSharkyBuild
                 MacroData.DesiredUpgrades[Upgrades.TERRANSHIPWEAPONSLEVEL2] = true;
             }
         }
+
+        _expandForever.OnFrame();
     }
 
     public override bool Transition(int frame) => false;
