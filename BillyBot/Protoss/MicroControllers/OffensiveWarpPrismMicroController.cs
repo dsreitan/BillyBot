@@ -5,7 +5,7 @@ using Sharky.MicroControllers.Protoss;
 using Sharky.Pathing;
 using Action = SC2APIProtocol.Action;
 
-namespace BillyBot.MicroControllers;
+namespace BillyBot.Protoss.MicroControllers;
 
 public class OffensiveWarpPrismMicroController : WarpPrismMicroController
 {
@@ -15,12 +15,9 @@ public class OffensiveWarpPrismMicroController : WarpPrismMicroController
 
     public override List<Action> Attack(UnitCommander commander, Point2D target, Point2D defensivePoint, Point2D groupCenter, int frame)
     {
-        var action = new List<SC2APIProtocol.Action>();
+        var action = new List<Action>();
 
-        if (SupportArmy(commander, target, defensivePoint, groupCenter, frame, out action))
-        {
-            return action;
-        }
+        if (SupportArmy(commander, target, defensivePoint, groupCenter, frame, out action)) return action;
         return base.Attack(commander, target, defensivePoint, groupCenter, frame);
     }
 }
