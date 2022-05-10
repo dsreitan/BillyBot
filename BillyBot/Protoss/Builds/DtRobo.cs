@@ -15,6 +15,10 @@ public class DtRobo : BaseBillyBotBuild
     {
         base.StartBuild(frame);
 
+
+        BuildOptions.StrictSupplyCount = true;
+
+
         MacroData.DesiredUpgrades[Upgrades.WARPGATERESEARCH] = true;
 
         if (!MicroTaskData.MicroTasks["AdeptWorkerHarassTask"].Enabled) MicroTaskData.MicroTasks["AdeptWorkerHarassTask"].Enable();
@@ -24,10 +28,11 @@ public class DtRobo : BaseBillyBotBuild
 
     public override void OnFrame(ResponseObservation observation)
     {
-        BalancePylons();
+        int frame = (int)observation.Observation.GameLoop;
+        BalancePylons(frame);
 
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] =
-            UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_DARKSHRINE) == 1 ? 3 : 1;
+           UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_DARKSHRINE) == 1 ? 3 : 1;
 
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_NEXUS] = 2;
 

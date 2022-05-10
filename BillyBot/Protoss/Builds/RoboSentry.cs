@@ -29,8 +29,8 @@ public class RoboSentry : BaseBillyBotBuild
             UnitTypes.PROTOSS_OBSERVER,
             UnitTypes.PROTOSS_WARPPRISM
         };
-
-        BalancePylons();
+        var frame = (int)observation.Observation.GameLoop;
+        BalancePylons(frame);
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_NEXUS] = 3;
         MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_OBSERVER] = 1;
 

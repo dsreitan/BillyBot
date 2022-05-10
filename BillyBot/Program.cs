@@ -23,7 +23,7 @@ defaultSharkyBot.BuildChoices[Race.Zerg] = zergBuildChoices.BuildChoices;
 var billyBot = defaultSharkyBot.CreateBot(defaultSharkyBot.Managers, defaultSharkyBot.DebugService);
 
 var mapName = "2000AtmospheresAIE.SC2Map";
-var myRace = Race.Terran;
+var myRace = Race.Protoss;
 if (args.Length == 0)
     gameConnection.RunSinglePlayer(billyBot, mapName, myRace, Race.Zerg, Difficulty.Hard, AIBuild.RandomBuild).Wait();
 else

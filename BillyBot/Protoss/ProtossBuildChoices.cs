@@ -27,7 +27,7 @@ public class ProtossBuildChoices
 
         var versusEverything = new List<List<string>>
         {
-            new() {macroOpener.Name(), roboSentry.Name()}
+            new() {macroOpener.Name(), dtRobo.Name()}
         };
 
         var buildSequences = new Dictionary<string, List<List<string>>>

@@ -17,6 +17,10 @@ public class MacroOpener : BaseBillyBotBuild
 
         BuildOptions.StrictSupplyCount = true;
         BuildOptions.StrictGasCount = true;
+        BuildOptions.StrictWorkerCount = true;
+        MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_PROBE] = 20;
+
+
         if (!MicroTaskData.MicroTasks["WorkerScoutTask"].Enabled) MicroTaskData.MicroTasks["WorkerScoutTask"].Enable();
     }
 
@@ -26,7 +30,7 @@ public class MacroOpener : BaseBillyBotBuild
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = 1;
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_NEXUS] = 2;
 
-        if (MacroData.FoodUsed > 16)
+        if (MacroData.FoodUsed > 15)
         {
             ChronoData.ChronodUnits = new()
             {
@@ -38,7 +42,10 @@ public class MacroOpener : BaseBillyBotBuild
             MacroData.DesiredGases = 1;
 
         if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_NEXUS) > 1)
+        {
             MacroData.DesiredTechCounts[UnitTypes.PROTOSS_CYBERNETICSCORE] = 1;
+        }
+
     }
 
     public override bool Transition(int frame) => UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_CYBERNETICSCORE) > 0;
