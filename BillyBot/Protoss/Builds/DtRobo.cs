@@ -2,6 +2,7 @@
 using Sharky;
 using Sharky.Builds.BuildChoosing;
 using Sharky.DefaultBot;
+using System.Xml.Serialization;
 
 namespace BillyBot.Protoss.Builds;
 
@@ -13,11 +14,13 @@ public class DtRobo : BaseBillyBotBuild
 
     public override void StartBuild(int frame)
     {
-        base.StartBuild(frame);
+        //base.StartBuild(frame);
 
 
         BuildOptions.StrictSupplyCount = true;
+        BuildOptions.StrictGasCount = false;
 
+        BuildOptions.StrictWorkerCount = false;
 
         MacroData.DesiredUpgrades[Upgrades.WARPGATERESEARCH] = true;
 
@@ -31,18 +34,38 @@ public class DtRobo : BaseBillyBotBuild
         int frame = (int)observation.Observation.GameLoop;
         BalancePylons(frame);
 
-        MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] =
-           UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_DARKSHRINE) == 1 ? 3 : 1;
-
+        //permanent
+        MacroData.DesiredTechCounts[UnitTypes.PROTOSS_CYBERNETICSCORE] = 1;
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_NEXUS] = 2;
 
-        MacroData.DesiredTechCounts[UnitTypes.PROTOSS_CYBERNETICSCORE] = 1;
-        MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 1;
+
+        if(UnitCountService.UpgradeDoneOrInProgress(Upgrades.WARPGATERESEARCH)) 
+            BuildOptions.StrictGasCount = (UnitCountService.Count(UnitTypes.PROTOSS_GATEWAY)
+             + UnitCountService.Count(UnitTypes.PROTOSS_WARPGATE) < 3);
+
+        desiredDebug(frame, 100, false);
+
+        if (UnitCountService.Count(UnitTypes.PROTOSS_DARKSHRINE) == 1)
+        {
+            MakeGateways(3);
+
+            
+
+             
+        }
+
+
         MacroData.DesiredTechCounts[UnitTypes.PROTOSS_TWILIGHTCOUNCIL] = 1;
+        MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 1;
         MacroData.DesiredTechCounts[UnitTypes.PROTOSS_DARKSHRINE] = 1;
 
-        MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_DARKTEMPLAR] = 3;
-        MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_WARPPRISM] = 1;
+        if((UnitCountService.Count(UnitTypes.PROTOSS_GATEWAY)
+             + UnitCountService.Count(UnitTypes.PROTOSS_WARPGATE)) >= 3)
+        {
+            MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_WARPPRISM] = 1;
+            MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_DARKTEMPLAR] = 4;
+        }
+        
     }
 
     public override bool Transition(int frame) => UnitCountService.Completed(UnitTypes.PROTOSS_DARKTEMPLAR) > 3;
