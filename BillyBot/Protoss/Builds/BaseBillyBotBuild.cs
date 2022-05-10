@@ -1,8 +1,10 @@
 ﻿using BillyBot.Common;
+using SC2APIProtocol;
 using Sharky;
 using Sharky.Builds;
 using Sharky.Builds.BuildChoosing;
 using Sharky.DefaultBot;
+using System.Text.RegularExpressions;
 
 namespace BillyBot.Protoss.Builds;
 
@@ -17,6 +19,21 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
         base.StartBuild(frame);
 
         MacroData.DesiredUpgrades[Upgrades.WARPGATERESEARCH] = true;
+    }
+
+    public override void OnFrame(ResponseObservation observation)
+    {
+        base.OnFrame(observation);
+        var chat = observation.Chat;
+        foreach (var chatReceived in chat)
+        {
+            var match = Regex.Match(chatReceived.Message.ToLower(), @"desires");
+            if (match.Success)
+            {
+                string desires = desiredDebug(false);
+                Console.WriteLine(desires);
+            }
+        }
     }
 
     /// <summary>
@@ -64,54 +81,78 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
 
     protected void desiredDebug(int frame, int delay, bool showAllreadyAquired)
     {
-        if (frame % delay == 0)
-        {
-            String desires = (showAllreadyAquired) ? "Shows Aquired" + "\n" : "Hides Aquired" +  "\n";
-            
-            
-            desires += "buildings: \n";
-            foreach (var u in MacroData.DesiredProductionCounts)
-                if (MacroData.BuildProduction[u.Key]) desires += u.ToString() + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";
-                else
-                   if (showAllreadyAquired) desires += u.ToString() + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";
+        if (frame % delay == 0) Console.WriteLine(desiredDebug(showAllreadyAquired));
+    }
 
-            desires += "techs \n";
-            foreach (var u in MacroData.DesiredTechCounts)
-                if(MacroData.BuildTech[u.Key]) desires += u.ToString() + ":" + MacroData.BuildTech[u.Key] + " want " + u.Value + "\n";
-                else
-                    if(showAllreadyAquired) desires += u.ToString() + ":" + MacroData.BuildTech[u.Key] + " want " + u.Value + "\n";
 
-            desires += "units \n";
-            List<UnitTypes> allUnits = MacroData.NexusUnits;
-            allUnits.AddRange(MacroData.GatewayUnits);
-            allUnits.AddRange(MacroData.RoboticsFacilityUnits);
-            allUnits.AddRange(MacroData.StargateUnits);
-            foreach (var u in MacroData.DesiredUnitCounts)
-                if (MacroData.BuildUnits[u.Key]) desires += u.ToString() + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
-                else
-                    if(showAllreadyAquired) desires += u.ToString() + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
+    protected String desiredDebug(bool showAllreadyAquired)
+    {
 
-            desires += "morphs \n";
-            foreach (var u in MacroData.DesiredMorphCounts)
-                if (MacroData.Morph[u.Key]) desires += u.ToString() + ":" + MacroData.Morph[u.Key] + " want " + u.Value + "\n";
-                else
-                    if(showAllreadyAquired) desires += u.ToString() + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
-            
-            foreach (var u in MacroData.DesiredUpgrades)
-                if(u.Value) desires += u.ToString() + ":" + u.Value + "\n";
-                else
-                    if (showAllreadyAquired) desires += u.ToString() + ":" + u.Value + "\n";
+        String desires = (showAllreadyAquired) ? "Shows Aquired" + "\n" : "Hides Aquired" + "\n";
 
-            if (BuildOptions.StrictGasCount)
-                desires += "Gascount desired " + MacroData.DesiredGases + "\n";
-            if (BuildOptions.StrictWorkerCount)
-                desires += "Workercount desired " + MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_PROBE] + "\n";
 
-            Console.WriteLine(desires);
+        var prodDesires = "";
+        foreach (var u in MacroData.DesiredProductionCounts)
+            if (MacroData.BuildProduction[u.Key]) {
+                if(prodDesires.Length==0) prodDesires+= "buildings: \n";
+                prodDesires += u.ToString() + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";
+            }
+            else
+                if (showAllreadyAquired) prodDesires += u.ToString() + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";
+        desires += prodDesires;
 
+
+        var techDesires = "";
+        foreach (var u in MacroData.DesiredTechCounts) { 
+            if (MacroData.BuildTech[u.Key]) {
+                if (techDesires.Length == 0) techDesires += "techs: \n";
+                techDesires += u.ToString() + ":" + MacroData.BuildTech[u.Key] + " want " + u.Value + "\n"; 
+            }
+            else
+                if (showAllreadyAquired) techDesires += u.ToString() + ":" + MacroData.BuildTech[u.Key] + " want " + u.Value + "\n";
         }
+        desires += techDesires;
 
 
+        var unitDesires = "";
+        List<UnitTypes> allUnits = MacroData.NexusUnits;
+        allUnits.AddRange(MacroData.GatewayUnits);
+        allUnits.AddRange(MacroData.RoboticsFacilityUnits);
+        allUnits.AddRange(MacroData.StargateUnits);
+        foreach (var u in MacroData.DesiredUnitCounts)
+            if (MacroData.BuildUnits[u.Key])
+            {
+                if (unitDesires.Length == 0) unitDesires += "units \n";
+                unitDesires += u.ToString() + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
+            }
+            else
+                if (showAllreadyAquired) unitDesires += u.ToString() + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
+        desires += unitDesires;
+
+        var morphDesires = "";
+        foreach (var u in MacroData.DesiredMorphCounts)
+            if (MacroData.Morph[u.Key])
+            {
+                if(morphDesires.Length==0) morphDesires+= "morphs \n";
+                desires += u.ToString() + ":" + MacroData.Morph[u.Key] + " want " + u.Value + "\n";
+            }
+            else
+                if (showAllreadyAquired) desires += u.ToString() + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
+        desires += morphDesires;
+
+        var upgradeDesires = "";
+        foreach (var u in MacroData.DesiredUpgrades)
+            if(u.Value && !UnitCountService.UpgradeDoneOrInProgress(u.Key)) upgradeDesires += u.ToString() + ":" + u.Value + "\n";
+            else
+                if (showAllreadyAquired) upgradeDesires += u.ToString() + ":" + u.Value + "\n";
+        desires += upgradeDesires;
+
+        if (BuildOptions.StrictGasCount)
+            desires += "Gascount desired " + MacroData.DesiredGases + "\n";
+        if (BuildOptions.StrictWorkerCount)
+            desires += "Workercount desired " + MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_PROBE] + "\n";
+
+        return desires;
     }
         
 }

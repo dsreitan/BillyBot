@@ -2,7 +2,7 @@
 using Sharky;
 using Sharky.Builds.BuildChoosing;
 using Sharky.DefaultBot;
-using System.Xml.Serialization;
+
 
 namespace BillyBot.Protoss.Builds;
 
@@ -43,12 +43,15 @@ public class DtRobo : BaseBillyBotBuild
             BuildOptions.StrictGasCount = (UnitCountService.Count(UnitTypes.PROTOSS_GATEWAY)
              + UnitCountService.Count(UnitTypes.PROTOSS_WARPGATE) < 3);
 
-        desiredDebug(frame, 100, false);
+ 
+        
 
         if (UnitCountService.Count(UnitTypes.PROTOSS_DARKSHRINE) == 1)
         {
             MakeGateways(3);
-
+            if(frame % 1000 == 0)
+            {
+            }
             
 
              
