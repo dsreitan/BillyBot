@@ -1,13 +1,17 @@
-﻿using SC2APIProtocol;
+﻿using BillyBot.Protoss.MicroTasks;
+using SC2APIProtocol;
 using Sharky;
 using Sharky.Builds.BuildChoosing;
 using Sharky.DefaultBot;
-
+using Sharky.MicroTasks;
+using Sharky.MicroTasks.Harass;
 
 namespace BillyBot.Protoss.Builds;
 
 public class DtRobo : BaseBillyBotBuild
 {
+    private WarpPrismOffenseTask _warpPrismOffenseTask;
+
     public DtRobo(DefaultSharkyBot defaultSharkyBot, ICounterTransitioner counterTransitioner) : base(defaultSharkyBot, counterTransitioner)
     {
     }
@@ -16,7 +20,6 @@ public class DtRobo : BaseBillyBotBuild
     {
         //base.StartBuild(frame);
 
-
         BuildOptions.StrictSupplyCount = true;
         BuildOptions.StrictGasCount = false;
 
@@ -24,14 +27,14 @@ public class DtRobo : BaseBillyBotBuild
 
         MacroData.DesiredUpgrades[Upgrades.WARPGATERESEARCH] = true;
 
-        if (!MicroTaskData.MicroTasks["AdeptWorkerHarassTask"].Enabled) MicroTaskData.MicroTasks["AdeptWorkerHarassTask"].Enable();
-        if (!MicroTaskData.MicroTasks["DarkTemplarHarassTask"].Enabled) MicroTaskData.MicroTasks["DarkTemplarHarassTask"].Enable();
-        if (!MicroTaskData.MicroTasks["WarpPrismOffenseTask"].Enabled) MicroTaskData.MicroTasks["WarpPrismOffenseTask"].Enable();
+        MicroTaskData.MicroTasks[nameof(AdeptWorkerHarassTask)].Enable();
+        MicroTaskData.MicroTasks[nameof(DarkTemplarHarassTask)].Disable();
+        _warpPrismOffenseTask = (WarpPrismOffenseTask) MicroTaskData.MicroTasks[nameof(WarpPrismOffenseTask)];
     }
 
     public override void OnFrame(ResponseObservation observation)
     {
-        int frame = (int)observation.Observation.GameLoop;
+        var frame = (int) observation.Observation.GameLoop;
         BalancePylons(frame);
 
         //permanent
@@ -49,9 +52,6 @@ public class DtRobo : BaseBillyBotBuild
         if (UnitCountService.Count(UnitTypes.PROTOSS_DARKSHRINE) == 1)
         {
             MakeGateways(3);
-            if(frame % 1000 == 0)
-            {
-            }
             
 
              
@@ -69,6 +69,13 @@ public class DtRobo : BaseBillyBotBuild
             MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_DARKTEMPLAR] = 4;
         }
         
+        if (UnitCountService.Count(UnitTypes.PROTOSS_WARPPRISM) > 0
+            && UnitCountService.Count(UnitTypes.PROTOSS_DARKTEMPLAR) > 0)
+        {
+            _warpPrismOffenseTask.Enable(); // already enabled hmm
+            _warpPrismOffenseTask.SetDesiredUnitsClaims(new() {new(UnitTypes.PROTOSS_DARKTEMPLAR, 1), new(UnitTypes.PROTOSS_WARPPRISM, 1)});
+            MicroTaskData.MicroTasks["AttackTask"].ResetClaimedUnits();
+        }
     }
 
     public override bool Transition(int frame) => UnitCountService.Completed(UnitTypes.PROTOSS_DARKTEMPLAR) > 3;
