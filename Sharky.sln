@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharkyRandomExampleBot", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BillyBot", "BillyBot\BillyBot.csproj", "{88B9D36A-A20D-4D34-B158-98448E42DE06}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BillyBot.Tests", "BillyBot.Tests\BillyBot.Tests.csproj", "{99BCAFCA-0BF0-49A2-BD45-465F9123F2AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{88B9D36A-A20D-4D34-B158-98448E42DE06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88B9D36A-A20D-4D34-B158-98448E42DE06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88B9D36A-A20D-4D34-B158-98448E42DE06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99BCAFCA-0BF0-49A2-BD45-465F9123F2AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99BCAFCA-0BF0-49A2-BD45-465F9123F2AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99BCAFCA-0BF0-49A2-BD45-465F9123F2AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99BCAFCA-0BF0-49A2-BD45-465F9123F2AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
