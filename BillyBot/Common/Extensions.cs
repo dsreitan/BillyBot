@@ -1,6 +1,4 @@
-﻿using Sharky;
-
-namespace BillyBot.Common;
+﻿namespace BillyBot.Common;
 
 public static class Extensions
 {
@@ -13,10 +11,13 @@ public static class Extensions
 
     public static void SetMinProductionCount(this MacroData macroData, UnitTypes unitType, int minCount)
     {
-        if (macroData.DesiredProductionCounts[unitType] < minCount) macroData.DesiredProductionCounts[unitType] = minCount;
+        if (macroData.DesiredProductionCounts[unitType] < minCount)
+            macroData.DesiredProductionCounts[unitType] = minCount;
     }
+
     public static void SetMinUnitCount(this MacroData macroData, UnitTypes unitType, int minCount)
     {
-        if (macroData.DesiredUnitCounts[unitType] < minCount) macroData.DesiredUnitCounts[unitType] = minCount;
+        if (macroData.DesiredUnitCounts[unitType] < minCount)
+            macroData.DesiredUnitCounts[unitType] = minCount;
     }
 }

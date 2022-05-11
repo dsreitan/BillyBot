@@ -46,7 +46,7 @@ public class ProtossBuildChoices
 
     private void AddProtossTasks(DefaultSharkyBot defaultSharkyBot)
     {
-        var warpPrismOffenseTask = new WarpPrismOffenseTask(defaultSharkyBot, defaultSharkyBot.MicroController, -1);
-        defaultSharkyBot.MicroTaskData.MicroTasks[nameof(WarpPrismOffenseTask)] = warpPrismOffenseTask;
+        defaultSharkyBot.MicroTaskData.MicroTasks[nameof(WarpPrismInEnemyBaseTask)] = new WarpPrismInEnemyBaseTask(defaultSharkyBot);
+        defaultSharkyBot.MicroTaskData.MicroTasks[nameof(DtWarpInTask)] = new DtWarpInTask(defaultSharkyBot);
     }
 }
