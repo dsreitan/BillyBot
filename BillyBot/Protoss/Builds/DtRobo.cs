@@ -19,9 +19,16 @@ public class DtRobo : BaseBillyBotBuild
     public override void StartBuild(int frame)
     {
         //base.StartBuild(frame);
+        ChronoData.ChronodUnits = new()
+        {
+            UnitTypes.PROTOSS_OBSERVER,
+            UnitTypes.PROTOSS_WARPPRISM,
+            UnitTypes.PROTOSS_PROBE
+        };
 
         BuildOptions.StrictSupplyCount = true;
         BuildOptions.StrictGasCount = false;
+        MacroData.DesiredPylonsAtEveryBase = 1;
 
         BuildOptions.StrictWorkerCount = false;
 
@@ -34,6 +41,7 @@ public class DtRobo : BaseBillyBotBuild
 
     public override void OnFrame(ResponseObservation observation)
     {
+        chatDebug(observation);
         var frame = (int) observation.Observation.GameLoop;
         BalancePylons(frame);
         //permanent
