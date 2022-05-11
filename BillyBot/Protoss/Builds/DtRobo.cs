@@ -36,7 +36,6 @@ public class DtRobo : BaseBillyBotBuild
     {
         var frame = (int) observation.Observation.GameLoop;
         BalancePylons(frame);
-
         //permanent
         MacroData.DesiredTechCounts[UnitTypes.PROTOSS_CYBERNETICSCORE] = 1;
         MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_NEXUS] = 2;
