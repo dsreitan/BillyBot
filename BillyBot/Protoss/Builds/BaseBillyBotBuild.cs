@@ -1,16 +1,11 @@
-﻿using BillyBot.Common;
-using SC2APIProtocol;
-using Sharky;
+﻿using System.Text.RegularExpressions;
 using Sharky.Builds;
 using Sharky.Builds.BuildChoosing;
-using Sharky.DefaultBot;
-using System.Text.RegularExpressions;
 
 namespace BillyBot.Protoss.Builds;
 
 public class BaseBillyBotBuild : ProtossSharkyBuild
 {
-
     protected bool showAllreadyAquired;
 
     public BaseBillyBotBuild(DefaultSharkyBot defaultSharkyBot, ICounterTransitioner counterTransitioner) : base(defaultSharkyBot, counterTransitioner)
@@ -28,17 +23,13 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
     {
         base.OnFrame(observation);
 
-    }
-
-    protected void chatDebug(ResponseObservation observation)
-    {
         var chat = observation.Chat;
         foreach (var chatReceived in chat)
         {
             var match = Regex.Match(chatReceived.Message.ToLower(), @"desires");
             if (match.Success)
             {
-                string desires = desiredDebug();
+                var desires = desiredDebug();
                 Console.WriteLine(desires);
             }
         }
@@ -56,17 +47,15 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
         var stargateCount = ActiveUnitData.CompletedAndNearlyCompleted(UnitTypes.PROTOSS_STARGATE, .90f);
 
         double productionCapacity = nexusCount +
-                                 (gatewayCount + warpgateCount) * 2 +
-                                 roboCount * 6 +
-                                 stargateCount * 6;
+                                    (gatewayCount + warpgateCount) * 2 +
+                                    roboCount * 6 +
+                                    stargateCount * 6;
 
-        var productionCapacityInPylons =  (productionCapacity / 8);
-        double pylonsCurrentlyUsed = (MacroData.FoodUsed - nexusCount * 15) / 8.0;
-  
-        
+        var productionCapacityInPylons = productionCapacity / 8;
+        var pylonsCurrentlyUsed = (MacroData.FoodUsed - nexusCount * 15) / 8.0;
+
+
         MacroData.DesiredPylons = (int) Math.Ceiling(pylonsCurrentlyUsed + productionCapacityInPylons);
-
-
     }
 
     protected void AdeptHarass()
@@ -77,14 +66,9 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
 
     protected void MakeGateways(int desired)
     {
-        int currentGates = UnitCountService.Count(UnitTypes.PROTOSS_GATEWAY) + UnitCountService.Count(UnitTypes.PROTOSS_WARPGATE);
-        int currentGatesProgress = UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_GATEWAY);
-        if (currentGates < desired && currentGatesProgress < desired)
-        {
-                MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = currentGates+1;
-        }
-
-
+        var currentGates = UnitCountService.Count(UnitTypes.PROTOSS_GATEWAY) + UnitCountService.Count(UnitTypes.PROTOSS_WARPGATE);
+        var currentGatesProgress = UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_GATEWAY);
+        if (currentGates < desired && currentGatesProgress < desired) MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_GATEWAY] = currentGates + 1;
     }
 
     protected void desiredDebug(int frame, int delay)
@@ -93,9 +77,9 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
     }
 
 
-    protected String desiredDebug()
+    protected string desiredDebug()
     {
-        String desires = (showAllreadyAquired) ? "Shows Aquired" + "\n" : "Hides Aquired" + "\n";
+        var desires = showAllreadyAquired ? "Shows Aquired" + "\n" : "Hides Aquired" + "\n";
         desires += prodDesires();
         desires += techDesires();
         desires += unitDesires();
@@ -108,40 +92,38 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
     }
 
 
-    private String prodDesires()
+    private string prodDesires()
     {
         var prodDesires = "";
         foreach (var u in MacroData.DesiredProductionCounts)
             if (MacroData.BuildProduction[u.Key])
             {
                 if (prodDesires.Length == 0) prodDesires += "buildings: \n";
-                prodDesires += u.ToString() + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";
+                prodDesires += u + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";
             }
-            else
-                if (showAllreadyAquired) prodDesires += u.ToString() + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";
+            else if (showAllreadyAquired) prodDesires += u + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";
+
         return prodDesires;
     }
 
-    private String techDesires()
+    private string techDesires()
     {
         var techDesires = "";
         foreach (var u in MacroData.DesiredTechCounts)
-        {
             if (MacroData.BuildTech[u.Key])
             {
                 if (techDesires.Length == 0) techDesires += "techs: \n";
-                techDesires += u.ToString() + ":" + MacroData.BuildTech[u.Key] + " want " + u.Value + "\n";
+                techDesires += u + ":" + MacroData.BuildTech[u.Key] + " want " + u.Value + "\n";
             }
-            else
-                if (showAllreadyAquired) techDesires += u.ToString() + ":" + MacroData.BuildTech[u.Key] + " want " + u.Value + "\n";
-        }
+            else if (showAllreadyAquired) techDesires += u + ":" + MacroData.BuildTech[u.Key] + " want " + u.Value + "\n";
+
         return techDesires;
     }
 
-    private String unitDesires()
+    private string unitDesires()
     {
         var unitDesires = "";
-        List<UnitTypes> allUnits = MacroData.NexusUnits;
+        var allUnits = MacroData.NexusUnits;
         allUnits.AddRange(MacroData.GatewayUnits);
         allUnits.AddRange(MacroData.RoboticsFacilityUnits);
         allUnits.AddRange(MacroData.StargateUnits);
@@ -149,48 +131,47 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
             if (MacroData.BuildUnits[u.Key])
             {
                 if (unitDesires.Length == 0) unitDesires += "units \n";
-                unitDesires += u.ToString() + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
+                unitDesires += u + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
             }
-            else
-                if (showAllreadyAquired) unitDesires += u.ToString() + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
+            else if (showAllreadyAquired) unitDesires += u + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
+
         return unitDesires;
     }
 
-    private String morphDesires()
+    private string morphDesires()
     {
         var morphDesires = "";
         foreach (var u in MacroData.DesiredMorphCounts)
             if (MacroData.Morph[u.Key])
             {
                 if (morphDesires.Length == 0) morphDesires += "morphs \n";
-                morphDesires += u.ToString() + ":" + MacroData.Morph[u.Key] + " want " + u.Value + "\n";
+                morphDesires += u + ":" + MacroData.Morph[u.Key] + " want " + u.Value + "\n";
             }
-            else
-                if (showAllreadyAquired) morphDesires += u.ToString() + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
+            else if (showAllreadyAquired) morphDesires += u + ":" + MacroData.BuildUnits[u.Key] + " want " + u.Value + "\n";
+
         return morphDesires;
     }
 
-    private String upgradeDesires()
+    private string upgradeDesires()
     {
         var upgradeDesires = "";
         foreach (var u in MacroData.DesiredUpgrades)
-            if (u.Value && !UnitCountService.UpgradeDoneOrInProgress(u.Key)) upgradeDesires += u.ToString() + ":" + u.Value + "\n";
-            else
-                if (showAllreadyAquired) upgradeDesires += u.ToString() + ":" + u.Value + "\n";
+            if (u.Value && !UnitCountService.UpgradeDoneOrInProgress(u.Key)) upgradeDesires += u + ":" + u.Value + "\n";
+            else if (showAllreadyAquired) upgradeDesires += u + ":" + u.Value + "\n";
         return upgradeDesires;
     }
 
-    private String gasDesires()
+    private string gasDesires()
     {
         if (BuildOptions.StrictGasCount)
             return "Gascount desired " + MacroData.DesiredGases + "\n";
-        else return "";
+        return "";
     }
 
-    private String workerDesires()
+    private string workerDesires()
     {
         if (BuildOptions.StrictWorkerCount)
             return "Workercount desired " + MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_PROBE] + "\n";
-        else return "";
+        return "";
     }
 }

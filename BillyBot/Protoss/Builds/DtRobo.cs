@@ -43,7 +43,6 @@ public class DtRobo : BaseBillyBotBuild
 
     public override void OnFrame(ResponseObservation observation)
     {
-        chatDebug(observation);
         base.OnFrame(observation);
 
         var frame = (int) observation.Observation.GameLoop;
