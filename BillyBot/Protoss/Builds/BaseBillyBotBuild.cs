@@ -27,6 +27,11 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
     public override void OnFrame(ResponseObservation observation)
     {
         base.OnFrame(observation);
+
+    }
+
+    protected void chatDebug(ResponseObservation observation)
+    {
         var chat = observation.Chat;
         foreach (var chatReceived in chat)
         {
