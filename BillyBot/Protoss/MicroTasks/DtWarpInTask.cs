@@ -8,10 +8,10 @@ namespace BillyBot.Protoss.MicroTasks;
 public class DtWarpInTask : MicroTask
 {
     private readonly ActiveUnitData _activeUnitData;
+    private readonly DebugService _debugService;
     private readonly SharkyOptions _sharkyOptions;
     private readonly SharkyUnitData _sharkyUnitData;
     private readonly UnitCountService _unitCountService;
-    private readonly DebugService _debugService;
     private readonly WarpInPlacement _warpInPlacement;
 
     public DtWarpInTask(DefaultSharkyBot defaultSharkyBot, bool enabled = false)
@@ -26,7 +26,7 @@ public class DtWarpInTask : MicroTask
         Enabled = enabled;
         UnitCommanders = new();
     }
-    
+
     public override void ClaimUnits(ConcurrentDictionary<ulong, UnitCommander> commanders)
     {
         // set unitcommanders
@@ -46,15 +46,19 @@ public class DtWarpInTask : MicroTask
         if (warpPrism == null)
             return actions;
 
-        var warpInLocation = _warpInPlacement.FindPlacementForPylon(warpPrism.UnitCalculation, 1);
-        if (warpInLocation == null)
+        var warpInPoint = _warpInPlacement.FindPlacementForPylon(warpPrism.UnitCalculation, 1);
+        if (warpInPoint == null)
             return actions;
 
-        _debugService.DrawSphere(new() {X = warpInLocation.X, Y = warpInLocation.Y, Z = 12}, 1, new() {R = 255, G = 255, B = 0});
+        _debugService.DrawSphere(new() {X = warpInPoint.X, Y = warpInPoint.Y, Z = 12}, 1, new() {R = 255, G = 255, B = 0});
 
-        // enemies too close?
+        var unitSize = 1;
         foreach (var warpGate in idleWarpGates)
-            actions.AddRange(warpGate.Order(frame, Abilities.TRAIN_DARKTEMPLAR, warpInLocation, allowSpam: true));
+        {
+            actions.AddRange(warpGate.Order(frame, Abilities.TRAINWARP_DARKTEMPLAR, warpInPoint, allowSpam: true));
+            unitSize++;
+            warpInPoint = _warpInPlacement.FindPlacementForPylon(warpPrism.UnitCalculation, unitSize); // increase size to get new placement
+        }
 
         return actions;
     }
