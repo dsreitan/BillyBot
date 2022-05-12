@@ -46,6 +46,7 @@ public class ProtossBuildChoices
 
     private void AddProtossTasks(DefaultSharkyBot defaultSharkyBot)
     {
+        defaultSharkyBot.MicroTaskData.MicroTasks[nameof(WarpPrismSupportTask)] = new WarpPrismSupportTask(defaultSharkyBot, new[] {UnitTypes.PROTOSS_DARKTEMPLAR});
         defaultSharkyBot.MicroTaskData.MicroTasks[nameof(WarpPrismInEnemyBaseTask)] = new WarpPrismInEnemyBaseTask(defaultSharkyBot);
         defaultSharkyBot.MicroTaskData.MicroTasks[nameof(DtWarpInTask)] = new DtWarpInTask(defaultSharkyBot);
     }

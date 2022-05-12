@@ -11,6 +11,7 @@ public class DtWarpInTask : MicroTask
     private readonly SharkyOptions _sharkyOptions;
     private readonly SharkyUnitData _sharkyUnitData;
     private readonly UnitCountService _unitCountService;
+    private readonly DebugService _debugService;
     private readonly WarpInPlacement _warpInPlacement;
 
     public DtWarpInTask(DefaultSharkyBot defaultSharkyBot, bool enabled = false)
@@ -19,6 +20,7 @@ public class DtWarpInTask : MicroTask
         _activeUnitData = defaultSharkyBot.ActiveUnitData;
         _sharkyOptions = defaultSharkyBot.SharkyOptions;
         _sharkyUnitData = defaultSharkyBot.SharkyUnitData;
+        _debugService = defaultSharkyBot.DebugService;
         _warpInPlacement = (WarpInPlacement) defaultSharkyBot.WarpInPlacement;
 
         Enabled = enabled;
@@ -40,17 +42,19 @@ public class DtWarpInTask : MicroTask
         if (idleWarpGates.Any() == false)
             return actions;
 
-        var warpPrism = _activeUnitData.Commanders.Values.FirstOrDefault(c => c.UnitCalculation.Unit.UnitType is (uint) UnitTypes.PROTOSS_WARPPRISM or (uint) UnitTypes.PROTOSS_WARPPRISMPHASING);
+        var warpPrism = _activeUnitData.Commanders.Values.FirstOrDefault(c => c.UnitCalculation.Unit.UnitType is (uint) UnitTypes.PROTOSS_WARPPRISMPHASING);
         if (warpPrism == null)
             return actions;
 
-        // cant find warpinlocation?
         var warpInLocation = _warpInPlacement.FindPlacementForPylon(warpPrism.UnitCalculation, 1);
         if (warpInLocation == null)
             return actions;
 
+        _debugService.DrawSphere(new() {X = warpInLocation.X, Y = warpInLocation.Y, Z = 12}, 1, new() {R = 255, G = 255, B = 0});
+
+        // enemies too close?
         foreach (var warpGate in idleWarpGates)
-            actions.AddRange(warpGate.Order(frame, Abilities.TRAIN_DARKTEMPLAR, warpInLocation));
+            actions.AddRange(warpGate.Order(frame, Abilities.TRAIN_DARKTEMPLAR, warpInLocation, allowSpam: true));
 
         return actions;
     }

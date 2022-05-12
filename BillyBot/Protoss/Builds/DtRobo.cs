@@ -65,6 +65,12 @@ public class DtRobo : BaseBillyBotBuild
             MacroData.DesiredTechCounts[UnitTypes.PROTOSS_DARKSHRINE] = 1;
         }
 
+        if (UnitCountService.Completed(UnitTypes.PROTOSS_DARKTEMPLAR) >= 4)
+        {
+            MicroTaskData.MicroTasks[nameof(WarpPrismInEnemyBaseTask)].Disable();
+            MicroTaskData.MicroTasks[nameof(WarpPrismSupportTask)].Enable();
+        }
+
         // DtWarpInTask should make sure DT's are warped in the enemy base
     }
 
