@@ -36,7 +36,7 @@ public class DtRobo : BaseBillyBotBuild
         MacroData.DesiredUpgrades[Upgrades.WARPGATERESEARCH] = true;
 
         MicroTaskData.MicroTasks[nameof(AdeptWorkerHarassTask)].Enable();
-        MicroTaskData.MicroTasks[nameof(DarkTemplarHarassTask)].Disable();
+        MicroTaskData.MicroTasks[nameof(DarkTemplarHarassTask)].Enable();
         MicroTaskData.MicroTasks[nameof(WarpPrismInEnemyBaseTask)].Enable();
         MicroTaskData.MicroTasks[nameof(DtWarpInTask)].Enable();
     }
