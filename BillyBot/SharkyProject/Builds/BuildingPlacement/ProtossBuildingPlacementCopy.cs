@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace Sharky.Builds.BuildingPlacement
 {
-    public class ProtossBuildingPlacement : IBuildingPlacement
+    public class ProtossBuildingPlacementCopy : IBuildingPlacement
     {
         ActiveUnitData ActiveUnitData;
         SharkyUnitData SharkyUnitData;
@@ -24,7 +24,7 @@ namespace Sharky.Builds.BuildingPlacement
         IBuildingPlacement ProtossDefensiveGridPlacement;
         IBuildingPlacement ProtossProxyGridPlacement;
 
-        public ProtossBuildingPlacement(ActiveUnitData activeUnitData, SharkyUnitData sharkyUnitData, BaseData baseData, DebugService debugService, MapDataService mapDataService, BuildingService buildingService, IBuildingPlacement wallOffPlacement, ProtossPylonGridPlacement protossPylonGridPlacement, ProtossProductionGridPlacement protossProductionGridPlacement, IBuildingPlacement protectNexusPylonPlacement, TargetingData targetingData, IBuildingPlacement protectNexusCannonPlacement, BuildOptions buildOptions, IBuildingPlacement protossDefensiveGridPlacement, IBuildingPlacement protossProxyGridPlacement)
+        public ProtossBuildingPlacementCopy(ActiveUnitData activeUnitData, SharkyUnitData sharkyUnitData, BaseData baseData, DebugService debugService, MapDataService mapDataService, BuildingService buildingService, IBuildingPlacement wallOffPlacement, ProtossPylonGridPlacement protossPylonGridPlacement, ProtossProductionGridPlacement protossProductionGridPlacement, IBuildingPlacement protectNexusPylonPlacement, TargetingData targetingData, IBuildingPlacement protectNexusCannonPlacement, BuildOptions buildOptions, IBuildingPlacement protossDefensiveGridPlacement, IBuildingPlacement protossProxyGridPlacement)
         {
             ActiveUnitData = activeUnitData;
             SharkyUnitData = sharkyUnitData;
@@ -43,33 +43,42 @@ namespace Sharky.Builds.BuildingPlacement
             ProtossProxyGridPlacement = protossProxyGridPlacement;
         }
 
+        private Point2D handleWallOff(Point2D target, UnitTypes unitType, int size, bool ignoreResourceProximity, float maxDistance, bool requireSameHeight, WallOffType wallOffType, bool requireVision, bool allowBlockBase)
+        {
+            Point2D point;
+            if (wallOffType == WallOffType.Full)
+            {
+                if (!BuildingService.FullyWalled())
+                {
+                    point = WallOffPlacement.FindPlacement(target, unitType, size, ignoreResourceProximity, maxDistance, requireSameHeight, wallOffType, requireVision, allowBlockBase);
+                    if (point != null)
+                    {
+                        return point;
+                    }
+                }
+            }
+            else if(wallOffType == WallOffType.Partial)
+            {
+                if (!BuildingService.PartiallyWalled())
+                {
+                    point = WallOffPlacement.FindPlacement(target, unitType, size, ignoreResourceProximity, maxDistance, requireSameHeight, wallOffType, requireVision, allowBlockBase);
+                    if (point != null)
+                    {
+                        return point;
+                    }
+                }
+            }
+            return FindPlacement(target, unitType, size, ignoreResourceProximity, maxDistance, requireSameHeight, WallOffType.None, requireVision, allowBlockBase);
+        }
+
+
+
         public Point2D FindPlacement(Point2D target, UnitTypes unitType, int size, bool ignoreResourceProximity = false, float maxDistance = 50, bool requireSameHeight = false, WallOffType wallOffType = WallOffType.None, bool requireVision = false, bool allowBlockBase = false)
         {
             var mineralProximity = 2;
             if (ignoreResourceProximity) { mineralProximity = 0; };
 
-            if (wallOffType == WallOffType.Full)
-            {
-                if (!BuildingService.FullyWalled())
-                {
-                    var point = WallOffPlacement.FindPlacement(target, unitType, size, ignoreResourceProximity, maxDistance, requireSameHeight, wallOffType, requireVision, allowBlockBase);
-                    if (point != null)
-                    {
-                        return point;
-                    }
-                }
-            }
-            else if (wallOffType == WallOffType.Partial)
-            {
-                if (!BuildingService.PartiallyWalled())
-                {
-                    var point = WallOffPlacement.FindPlacement(target, unitType, size, ignoreResourceProximity, maxDistance, requireSameHeight, wallOffType, requireVision, allowBlockBase);
-                    if (point != null)
-                    {
-                        return point;
-                    }
-                }
-            }
+            if (wallOffType != WallOffType.None) return handleWallOff(target, unitType, size, ignoreResourceProximity, maxDistance, requireSameHeight, wallOffType, requireVision, allowBlockBase);
 
             if (unitType == UnitTypes.PROTOSS_PYLON)
             {
@@ -80,6 +89,8 @@ namespace Sharky.Builds.BuildingPlacement
                 return FindProductionPlacement(target, size, maxDistance, mineralProximity, wallOffType, requireVision, allowBlockBase);
             }
         }
+
+
 
         public Point2D FindPylonPlacement(Point2D reference, float maxDistance, float minimumMineralProximinity = 2, bool requireSameHeight = false, WallOffType wallOffType = WallOffType.None, bool requireVision = false, bool allowBlockBase = false)
         {
@@ -150,14 +161,21 @@ namespace Sharky.Builds.BuildingPlacement
             return null;
         }
 
-        public Point2D FindProductionPlacement(Point2D target, float size, float maxDistance, float minimumMineralProximinity = 2, WallOffType wallOffType = WallOffType.None, bool requireVision = false, bool allowBlockBase = true)
+        private Point2D placeToBuild;
+
+        private bool findNonBlockingNonPylonSpotSizeThree(Point2D target, float size, float maxDistance, float minimumMineralProximinity, Boolean allowBlockBase)
         {
+
             if (!allowBlockBase && size == 3)
             {
                 var spot = ProtossProductionGridPlacement.FindPlacement(target, size, maxDistance, minimumMineralProximinity);
-                if (spot != null) { return spot; }
+                if (spot != null) { placeToBuild = spot; return true; }
             }
+            return false;
+        }
 
+        private bool findNonPylonSizeTwo(Point2D target, float size, float maxDistance, float minimumMineralProximinity)
+        {
             if (size == 2)
             {
                 var selfBase = BaseData.BaseLocations.FirstOrDefault(b => (b.Location.X == target.X && b.Location.Y == target.Y) && !(b.Location.X == TargetingData.SelfMainBasePoint.X && b.Location.Y == TargetingData.SelfMainBasePoint.Y) && !(b.Location.X == TargetingData.NaturalBasePoint.X && b.Location.Y == TargetingData.NaturalBasePoint.Y));
@@ -166,15 +184,28 @@ namespace Sharky.Builds.BuildingPlacement
                     var location = ProtectNexusCannonPlacement.FindPlacement(target, UnitTypes.PROTOSS_PHOTONCANNON, 1);
                     if (location != null)
                     {
-                        return location;
+                        return true;
                     }
                 }
                 var gridPlacement = ProtossDefensiveGridPlacement.FindPlacement(target, UnitTypes.PROTOSS_PHOTONCANNON, (int)size, minimumMineralProximinity == 0, maxDistance, true, wallOffType, requireVision, allowBlockBase);
                 if (gridPlacement != null)
                 {
-                    return gridPlacement;
+                    return true;
                 }
+                
             }
+            return false;  
+        }
+
+        public Point2D FindProductionPlacement(Point2D target, float size, float maxDistance, float minimumMineralProximinity = 2, WallOffType wallOffType = WallOffType.None, bool requireVision = false, bool allowBlockBase = true)
+        {
+            placeToBuild = new Point2D();
+            //
+            if (findNonBlockingNonPylonSpotSizeThree(target, size, maxDistance, minimumMineralProximinity, allowBlockBase))
+                return placeToBuild;
+
+
+     
 
             if (size == 3 && allowBlockBase)
             {

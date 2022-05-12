@@ -23,6 +23,12 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
     {
         base.OnFrame(observation);
 
+    }
+
+
+    protected void debugChat(ResponseObservation observation)
+    {
+
         var chat = observation.Chat;
         foreach (var chatReceived in chat)
         {
@@ -34,7 +40,6 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
             }
         }
     }
-
     /// <summary>
     ///     Used with strict supply true, to override it's formula.
     /// </summary>

@@ -46,6 +46,7 @@ public class DtRobo : BaseBillyBotBuild
         base.OnFrame(observation);
 
         var frame = (int) observation.Observation.GameLoop;
+        debugChat(observation);
 
         BalancePylons(frame);
 
@@ -62,7 +63,8 @@ public class DtRobo : BaseBillyBotBuild
         {
             MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 1;
             MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_WARPPRISM] = 1;
-            MacroData.DesiredTechCounts[UnitTypes.PROTOSS_DARKSHRINE] = 1;
+            if(UnitCountService.Completed(UnitTypes.PROTOSS_TWILIGHTCOUNCIL)>0)
+                MacroData.DesiredTechCounts[UnitTypes.PROTOSS_DARKSHRINE] = 1;
         }
 
         if (UnitCountService.Completed(UnitTypes.PROTOSS_DARKTEMPLAR) >= 4)
