@@ -45,6 +45,7 @@ public class DtRobo : BaseBillyBotBuild
     {
         base.OnFrame(observation);
 
+
         var frame = (int) observation.Observation.GameLoop;
         debugChat(observation);
 

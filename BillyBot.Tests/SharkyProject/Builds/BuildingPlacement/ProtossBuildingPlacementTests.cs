@@ -16,7 +16,7 @@ public class ProtossBuildingPlacementTest
     private SharkyOptions? _sharkyOptions;
     private SharkyUnitData? _sharkyUnitData;
     private UnitDataService? _unitDataService;
-    private ProtossBuildingPlacementCopy? protossBuildingPlacement;
+    //private ProtossBuildingPlacementCopy? protossBuildingPlacement;
 
     [SetUp]
     public void Setup()

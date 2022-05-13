@@ -1,10 +1,12 @@
 ﻿using SC2APIProtocol;
+using Sharky.Builds;
+using Sharky.Builds.BuildingPlacement;
 using Sharky.Pathing;
 using System;
 using System.Linq;
 using System.Numerics;
 
-namespace Sharky.Builds.BuildingPlacement
+namespace BillyBot.Sharky.Builds.BuildingPlacement
 {
     public class ProtossBuildingPlacementCopy : IBuildingPlacement
     {
@@ -42,6 +44,27 @@ namespace Sharky.Builds.BuildingPlacement
             ProtossDefensiveGridPlacement = protossDefensiveGridPlacement;
             ProtossProxyGridPlacement = protossProxyGridPlacement;
         }
+
+        public ProtossBuildingPlacementCopy(DefaultSharkyBot defaultSharkyBot)
+        {
+            ActiveUnitData = defaultSharkyBot.ActiveUnitData;
+            SharkyUnitData = defaultSharkyBot.SharkyUnitData;
+            BaseData = defaultSharkyBot.BaseData;
+            DebugService = defaultSharkyBot.DebugService;
+            MapDataService = defaultSharkyBot.MapDataService;
+            BuildingService = defaultSharkyBot.BuildingService;
+            WallOffPlacement = defaultSharkyBot.WallOffPlacement;
+            ProtossPylonGridPlacement = defaultSharkyBot.ProtossPylonGridPlacement;
+            ProtossProductionGridPlacement = defaultSharkyBot.ProtossProductionGridPlacement;
+            ProtectNexusPylonPlacement = defaultSharkyBot.ProtectNexusPylonPlacement;
+            TargetingData = defaultSharkyBot.TargetingData;
+            ProtectNexusCannonPlacement = defaultSharkyBot.ProtectNexusCannonPlacement;
+            BuildOptions = defaultSharkyBot.BuildOptions;
+            ProtossDefensiveGridPlacement = defaultSharkyBot.ProtossDefensiveGridPlacement;
+            ProtossProxyGridPlacement = defaultSharkyBot.ProtossProxyGridPlacement;
+
+        }
+
 
         private Point2D handleWallOff(Point2D target, UnitTypes unitType, int size, bool ignoreResourceProximity, float maxDistance, bool requireSameHeight, WallOffType wallOffType, bool requireVision, bool allowBlockBase)
         {
@@ -161,20 +184,43 @@ namespace Sharky.Builds.BuildingPlacement
             return null;
         }
 
-        private Point2D placeToBuild;
+        private Point2D? BuildPoint;
 
-        private bool findNonBlockingNonPylonSpotSizeThree(Point2D target, float size, float maxDistance, float minimumMineralProximinity, Boolean allowBlockBase)
+      
+
+
+
+
+
+        public Point2D FindProductionPlacement(Point2D target, float size, float maxDistance, float minimumMineralProximinity = 2, WallOffType wallOffType = WallOffType.None, bool requireVision = false, bool allowBlockBase = true)
+        {
+            BuildPoint = null;
+            //
+            if (findNonBlockingNonPylonSpotSizeThree(target, size, maxDistance, minimumMineralProximinity, allowBlockBase))
+                if(BuildPoint!=null) return BuildPoint;
+            if (findNonPylonSizeTwo(target, size, maxDistance, minimumMineralProximinity, wallOffType, requireVision, allowBlockBase))
+                if (BuildPoint != null) return BuildPoint;
+            if (findBlockingNonPylonSizeThree(target, size, maxDistance, minimumMineralProximinity, wallOffType, requireVision, allowBlockBase))
+                if (BuildPoint != null) return BuildPoint;
+            if(trySimple(target, size, maxDistance, minimumMineralProximinity, wallOffType, requireVision, allowBlockBase))
+                if (BuildPoint != null) return BuildPoint;
+
+
+            return FindProductionPlacementTryHarder(target, size, maxDistance, minimumMineralProximinity, allowBlockBase);
+        }
+
+        private bool findNonBlockingNonPylonSpotSizeThree(Point2D target, float size, float maxDistance, float minimumMineralProximinity, bool allowBlockBase)
         {
 
             if (!allowBlockBase && size == 3)
             {
                 var spot = ProtossProductionGridPlacement.FindPlacement(target, size, maxDistance, minimumMineralProximinity);
-                if (spot != null) { placeToBuild = spot; return true; }
+                if (spot != null) { BuildPoint = spot; return true; }
             }
             return false;
         }
 
-        private bool findNonPylonSizeTwo(Point2D target, float size, float maxDistance, float minimumMineralProximinity)
+        private bool findNonPylonSizeTwo(Point2D target, float size, float maxDistance, float minimumMineralProximinity, WallOffType wallOffType, bool requireVision, bool allowBlockBase)
         {
             if (size == 2)
             {
@@ -184,126 +230,184 @@ namespace Sharky.Builds.BuildingPlacement
                     var location = ProtectNexusCannonPlacement.FindPlacement(target, UnitTypes.PROTOSS_PHOTONCANNON, 1);
                     if (location != null)
                     {
-                        return true;
+                        BuildPoint = location; return true;
                     }
                 }
                 var gridPlacement = ProtossDefensiveGridPlacement.FindPlacement(target, UnitTypes.PROTOSS_PHOTONCANNON, (int)size, minimumMineralProximinity == 0, maxDistance, true, wallOffType, requireVision, allowBlockBase);
                 if (gridPlacement != null)
                 {
-                    return true;
+                    BuildPoint = gridPlacement; return true;
                 }
-                
+
             }
-            return false;  
+            return false;
         }
 
-        public Point2D FindProductionPlacement(Point2D target, float size, float maxDistance, float minimumMineralProximinity = 2, WallOffType wallOffType = WallOffType.None, bool requireVision = false, bool allowBlockBase = true)
+        private bool findBlockingNonPylonSizeThree(Point2D target, float size, float maxDistance, float minimumMineralProximinity, WallOffType wallOffType, bool requireVision, bool allowBlockBase)
         {
-            placeToBuild = new Point2D();
-            //
-            if (findNonBlockingNonPylonSpotSizeThree(target, size, maxDistance, minimumMineralProximinity, allowBlockBase))
-                return placeToBuild;
-
-
-     
-
             if (size == 3 && allowBlockBase)
             {
                 var gridPlacement = ProtossProxyGridPlacement.FindPlacement(target, UnitTypes.PROTOSS_GATEWAY, (int)size, minimumMineralProximinity == 0, maxDistance, true, wallOffType, requireVision, allowBlockBase);
                 if (gridPlacement != null)
                 {
-                    return gridPlacement;
+                    BuildPoint = gridPlacement;
+                    return true;
                 }
             }
+            return false;
+        }
 
+        private bool trySimple(Point2D target, float size, float maxDistance, float minimumMineralProximinity, WallOffType wallOffType, bool requireVision, bool allowBlockBase)
+        {
             var targetVector = new Vector2(target.X, target.Y);
             var powerSources = ActiveUnitData.Commanders.Values.Where(c => c.UnitCalculation.Unit.UnitType == (uint)UnitTypes.PROTOSS_PYLON && c.UnitCalculation.Unit.BuildProgress == 1).OrderBy(c => Vector2.DistanceSquared(c.UnitCalculation.Position, targetVector));
             foreach (var powerSource in powerSources)
             {
-                if (Vector2.DistanceSquared(new Vector2(target.X, target.Y), powerSource.UnitCalculation.Position) > (maxDistance + 8) * (maxDistance + 8)) 
-                { 
-                    break; 
+                if (ShouldTargetBePlacedAroundPowerSource(powerSource, target, size, maxDistance, minimumMineralProximinity, wallOffType, requireVision, allowBlockBase)) return true;
+            }
+            return false;
+        }
+
+        private bool ShouldTargetBePlacedAroundPowerSource(UnitCommander? powerSource, Point2D target, float size, float maxDistance, float minimumMineralProximinity, WallOffType wallOffType, bool requireVision, bool allowBlockBase)
+        {
+
+            if (!IsTargetInRangeOfPowerSource(target, powerSource, maxDistance)) return false;
+
+
+            var powerSourcePoint = new Point2D { X = powerSource.UnitCalculation.Unit.Pos.X, Y = powerSource.UnitCalculation.Unit.Pos.Y };
+            var pSX = powerSourcePoint.X;
+            var pSY = powerSourcePoint.Y;
+
+            var radius = size / 2f;
+            var powerRadius = 7 - (size / 2f);
+
+            // start at 12 o'clock then rotate around 12 times, increase radius by 1 until it's more than powerRadius
+            while (radius <= powerRadius)
+            {
+                rotateByRadius(powerSource, target, size, maxDistance, minimumMineralProximinity, allowBlockBase, radius, pSX, pSY);
+                radius += 1;
+            }
+
+
+
+            return false;
+        }
+
+
+        private bool IsTargetInRangeOfPowerSource(Point2D target, UnitCommander? powerSource, float maxDistance)
+        {
+            var powerSourceDistanceSquared = Vector2.DistanceSquared(new Vector2(target.X, target.Y), powerSource.UnitCalculation.Position);
+            var maxDistanceSquared = (maxDistance + 8) * (maxDistance + 8);
+            if (powerSourceDistanceSquared > maxDistanceSquared)
+            {
+                return false;
+            }
+            return true;
+        }
+
+
+        private bool rotateByRadius(UnitCommander? powerSource, Point2D target, float size, float maxDistance, float minimumMineralProximinity,
+            bool allowBlockBase, float radius, float pSX, float pSY)
+        {
+            var fullCircle = Math.PI * 2;
+            var sliceSize = fullCircle / 24.0;
+            var angle = 0.0;
+            while (angle + (sliceSize / 2) < fullCircle)
+            {
+                var pointInRotation = this.pointInRotation(radius, angle, size, pSX, pSY);
+
+                var vector = new Vector2(pointInRotation.X, pointInRotation.Y);
+                var tooClose = IsToCloseToBaseOrWall(allowBlockBase, vector);
+
+
+                if (!tooClose && !IsBlocked(pointInRotation, size, minimumMineralProximinity))
+                {
+                    var mineralFields = ActiveUnitData.NeutralUnits.Where((KeyValuePair<ulong, UnitCalculation> u) => SharkyUnitData.MineralFieldTypes.Contains((UnitTypes)u.Value.Unit.UnitType));
+                    var squared = (1 + minimumMineralProximinity + (size / 2f)) * (1 + minimumMineralProximinity + (size / 2f));
+                    var clashes = mineralFields.Where(u => Vector2.DistanceSquared(u.Value.Position, new Vector2(pointInRotation.X, pointInRotation.Y)) < squared);
+
+                    if (clashes.Count() == 0)
+                    {
+                        if (Vector2.DistanceSquared(new Vector2(target.X, target.Y), new Vector2(pointInRotation.X, pointInRotation.Y)) <= maxDistance * maxDistance && Vector2.DistanceSquared(vector, powerSource.UnitCalculation.Position) <= 36)
+                        {
+                            DebugService.DrawSphere(new Point { X = pointInRotation.X, Y = pointInRotation.Y, Z = 12 });
+                            BuildPoint = pointInRotation;
+                            return true;
+                        }
+                    }
                 }
 
-                var x = powerSource.UnitCalculation.Unit.Pos.X;
-                var y = powerSource.UnitCalculation.Unit.Pos.Y;
-                var radius = size / 2f;
-                var powerRadius = 7 - (size / 2f);
+                angle += sliceSize;
+            }
+            return false;
+        }
 
-                // start at 12 o'clock then rotate around 12 times, increase radius by 1 until it's more than powerRadius
-                while (radius <= powerRadius)
+        private Point2D pointInRotation(float radius, double angle, float size, float pSX, float pSY)
+        {
+            var point = new Point2D { X = pSX + (float)(radius * Math.Cos(angle)), Y = pSY + (float)(radius * Math.Sin(angle)) };
+            point = new Point2D { X = (float)Math.Round(point.X * 2f) / 2f, Y = (float)(Math.Round(point.Y * 2f) / 2f) };
+
+            if (size == 3)
+            {
+                if (point.X % 1 != .5)
                 {
-                    var fullCircle = Math.PI * 2;
-                    var sliceSize = fullCircle / 24.0;
-                    var angle = 0.0;
-                    while (angle + (sliceSize / 2) < fullCircle)
-                    {
-                        var point = new Point2D { X = x + (float)(radius * Math.Cos(angle)), Y = y + (float)(radius * Math.Sin(angle)) };
-                        point = new Point2D { X = (float)Math.Round(point.X * 2f) / 2f, Y = (float)(Math.Round(point.Y * 2f) / 2f) };
-
-                        if (size == 3)
-                        {
-                            if (point.X % 1 != .5)
-                            {
-                                point.X -= .5f;
-                            }
-                            if (point.Y % 1 != .5)
-                            {
-                                point.Y -= .5f;
-                            }
-                        }
-                        else if (size == 2)
-                        {
-                            if (point.X % 1 != 0)
-                            {
-                                point.X -= .5f;
-                            }
-                            if (point.Y % 1 != 0)
-                            {
-                                point.Y -= .5f;
-                            }
-                        }
-
-                        var vector = new Vector2(point.X, point.Y);
-                        var tooClose = false;
-
-                        if (!BuildOptions.AllowBlockWall && MapDataService.MapData?.WallData != null && MapDataService.MapData.WallData.Any(d => d.FullDepotWall != null && d.FullDepotWall.Any(p => Vector2.DistanceSquared(new Vector2(p.X, p.Y), vector) < 25)))
-                        {
-                            tooClose = true;
-                        }
-
-                        if (!allowBlockBase && BaseData.BaseLocations.Any(b => Vector2.DistanceSquared(new Vector2(b.Location.X, b.Location.Y), vector) < 25))
-                        {
-                            tooClose = true;
-                        }
-
-                        if (!tooClose && BuildingService.SameHeight(point.X, point.Y, size + 1 / 2.0f) && 
-                            (minimumMineralProximinity == 0 || !BuildingService.BlocksResourceCenter(point.X, point.Y, size + 1 / 2.0f)) && 
-                            BuildingService.AreaBuildable(point.X, point.Y, (size + 1) / 2.0f) && !BuildingService.Blocked(point.X, point.Y, (size + 1) / 2.0f) &&  // size +1 because want 1 space to move around to prevent walling self in
-                            !BuildingService.HasAnyCreep(point.X, point.Y, size / 2.0f) && 
-                            !BuildingService.BlocksPath(point.X, point.Y, size / 2f))
-                        {
-                            var mineralFields = ActiveUnitData.NeutralUnits.Where(u => SharkyUnitData.MineralFieldTypes.Contains((UnitTypes)u.Value.Unit.UnitType));
-                            var squared = (1 + minimumMineralProximinity + (size / 2f)) * (1 + minimumMineralProximinity + (size / 2f));
-                            var clashes = mineralFields.Where(u => Vector2.DistanceSquared(u.Value.Position, new Vector2(point.X, point.Y)) < squared);
-
-                            if (clashes.Count() == 0)
-                            {
-                                if (Vector2.DistanceSquared(new Vector2(target.X, target.Y), new Vector2(point.X, point.Y)) <= maxDistance * maxDistance && Vector2.DistanceSquared(vector, powerSource.UnitCalculation.Position) <= 36)
-                                {
-                                    DebugService.DrawSphere(new Point { X = point.X, Y = point.Y, Z = 12 });
-                                    return point;
-                                }
-                            }
-                        }
-
-                        angle += sliceSize;
-                    }
-                    radius += 1;
+                    point.X -= .5f;
+                }
+                if (point.Y % 1 != .5)
+                {
+                    point.Y -= .5f;
                 }
             }
-            return FindProductionPlacementTryHarder(target, size, maxDistance, minimumMineralProximinity, allowBlockBase);
+            else if (size == 2)
+            {
+                if (point.X % 1 != 0)
+                {
+                    point.X -= .5f;
+                }
+                if (point.Y % 1 != 0)
+                {
+                    point.Y -= .5f;
+                }
+            }
+            return point;
         }
+
+        private bool IsToCloseToBaseOrWall(bool allowBlockBase, Vector2 vector)
+        {
+            if (!BuildOptions.AllowBlockWall && MapDataService.MapData?.WallData != null && MapDataService.MapData.WallData.Any(d => d.FullDepotWall != null && d.FullDepotWall.Any(p => Vector2.DistanceSquared(new Vector2(p.X, p.Y), vector) < 25)))
+            {
+                return true;
+            }
+
+            if (!allowBlockBase && BaseData.BaseLocations.Any(b => Vector2.DistanceSquared(new Vector2(b.Location.X, b.Location.Y), vector) < 25))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool IsBlocked(Point2D pointInRotation, float size, float minimumMineralProximinity)
+        {
+            if (BuildingService.SameHeight(pointInRotation.X, pointInRotation.Y, size + 1 / 2.0f) &&
+                    (minimumMineralProximinity == 0 || !BuildingService.BlocksResourceCenter(pointInRotation.X, pointInRotation.Y, size + 1 / 2.0f)) &&
+                    BuildingService.AreaBuildable(pointInRotation.X, pointInRotation.Y, (size + 1) / 2.0f) && !BuildingService.Blocked(pointInRotation.X, pointInRotation.Y, (size + 1) / 2.0f) &&  // size +1 because want 1 space to move around to prevent walling self in
+                    !BuildingService.HasAnyCreep(pointInRotation.X, pointInRotation.Y, size / 2.0f) &&
+                    !BuildingService.BlocksPath(pointInRotation.X, pointInRotation.Y, size / 2f))
+                return true;
+
+            return false;
+        }
+
+
+
+
+
+
+
+
+
+
+
 
         Point2D FindProductionPlacementTryHarder(Point2D target, float size, float maxDistance, float minimumMineralProximinity, bool allowBlockBase)
         {
