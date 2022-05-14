@@ -69,11 +69,11 @@ namespace Sharky.Builds.BuildingPlacement
 
         public bool Blocked(float x, float y, float radius, float padding = .5f, ulong tag = 0)
         {
+            
             if (ActiveUnitData.NeutralUnits.Any(u => Vector2.DistanceSquared(new Vector2(x, y), u.Value.Position) < (u.Value.Unit.Radius + padding + radius) * (u.Value.Unit.Radius + padding + radius)))
             {
                 return true;
             }
-
             if (ActiveUnitData.NeutralUnits.Where(u => u.Value.Unit.Health == 400).Any(u => Vector2.DistanceSquared(new Vector2(x, y), u.Value.Position) < (u.Value.Unit.Radius + padding + radius + 1.5) * (u.Value.Unit.Radius + padding + radius + 1.5)))
             {
                 return true;
@@ -105,6 +105,8 @@ namespace Sharky.Builds.BuildingPlacement
             var rectangle = new System.Drawing.RectangleF(x - radius, y - radius, (radius * 2), (radius * 2));
             var buildingRadius = BuildingPlacementRadius(building.Radius);
             var existing = new System.Drawing.RectangleF(building.Pos.X - buildingRadius, building.Pos.Y - buildingRadius, buildingRadius * 2, buildingRadius * 2);
+            //you make an intersection of a new rectangle 
+            
             var intersection = System.Drawing.RectangleF.Intersect(rectangle, existing);
             if (intersection.Width == 0 || intersection.Height == 0)
             {

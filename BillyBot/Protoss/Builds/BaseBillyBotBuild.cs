@@ -92,10 +92,13 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
         desires += upgradeDesires();
         desires += gasDesires();
         desires += workerDesires();
-
+        desires += "buildpylon " + MacroData.BuildPylon;
+        desires += "desiredpylons " + MacroData.DesiredPylons;
         return desires;
     }
 
+
+    
 
     private string prodDesires()
     {
@@ -103,7 +106,7 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
         foreach (var u in MacroData.DesiredProductionCounts)
             if (MacroData.BuildProduction[u.Key])
             {
-                if (prodDesires.Length == 0) prodDesires += "buildings: \n";
+                if (prodDesires.Length == 0) prodDesires += "production: \n";
                 prodDesires += u + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";
             }
             else if (showAllreadyAquired) prodDesires += u + ":" + MacroData.BuildProduction[u.Key] + " want " + u.Value + "\n";

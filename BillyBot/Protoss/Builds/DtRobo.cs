@@ -48,6 +48,7 @@ public class DtRobo : BaseBillyBotBuild
 
         var frame = (int) observation.Observation.GameLoop;
         debugChat(observation);
+        
 
         BalancePylons(frame);
 
@@ -59,14 +60,23 @@ public class DtRobo : BaseBillyBotBuild
 
         if (UnitCountService.Count(UnitTypes.PROTOSS_DARKSHRINE) == 1) MakeGateways(3);
 
-        MacroData.DesiredTechCounts[UnitTypes.PROTOSS_TWILIGHTCOUNCIL] = 1;
+        
+
+        if (UnitCountService.Completed(UnitTypes.PROTOSS_CYBERNETICSCORE) > 0) { 
+            MacroData.DesiredTechCounts[UnitTypes.PROTOSS_TWILIGHTCOUNCIL] = 1;
+            MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 1;
+
+        }
+
         if (UnitCountService.BuildingsDoneAndInProgressCount(UnitTypes.PROTOSS_TWILIGHTCOUNCIL) > 0)
         {
-            MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 1;
             MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_WARPPRISM] = 1;
             if(UnitCountService.Completed(UnitTypes.PROTOSS_TWILIGHTCOUNCIL)>0)
                 MacroData.DesiredTechCounts[UnitTypes.PROTOSS_DARKSHRINE] = 1;
         }
+
+        
+
 
         if (UnitCountService.Completed(UnitTypes.PROTOSS_DARKTEMPLAR) >= 4)
         {
@@ -78,4 +88,6 @@ public class DtRobo : BaseBillyBotBuild
     }
 
     public override bool Transition(int frame) => false;
+
+
 }
