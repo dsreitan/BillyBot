@@ -45,6 +45,7 @@ public class DtRobo : BaseBillyBotBuild
     {
         base.OnFrame(observation);
 
+        
 
         var frame = (int) observation.Observation.GameLoop;
         debugChat(observation);
@@ -82,6 +83,13 @@ public class DtRobo : BaseBillyBotBuild
         {
             MicroTaskData.MicroTasks[nameof(WarpPrismInEnemyBaseTask)].Disable();
             MicroTaskData.MicroTasks[nameof(WarpPrismSupportTask)].Enable();
+            MakeGateways(10);
+            MacroData.DesiredTechCounts[UnitTypes.PROTOSS_FORGE]=1;
+            MacroData.DesiredUpgrades[Upgrades.PROTOSSAIRWEAPONSLEVEL1] = true;
+            MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 2;
+            MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_IMMORTAL] = 10;
+
+
         }
 
         // DtWarpInTask should make sure DT's are warped in the enemy base

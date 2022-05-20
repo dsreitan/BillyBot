@@ -26,22 +26,32 @@ defaultSharkyBot.BuildChoices[Race.Terran] = terranBuildChoices.BuildChoices;
 var zergBuildChoices = new ZergBuildChoices(defaultSharkyBot);
 defaultSharkyBot.BuildChoices[Race.Zerg] = zergBuildChoices.BuildChoices;
 
-setMacroManager(defaultSharkyBot);
-defaultSharkyBot.Managers = NewManagers(defaultSharkyBot);
+DebugServiceCopy myDebug = new DebugServiceCopy(defaultSharkyBot.SharkyOptions);
+myDebug.DrawRequest = defaultSharkyBot.DebugService.DrawRequest;
 
 
-var billyBot = defaultSharkyBot.CreateBot(defaultSharkyBot.Managers, defaultSharkyBot.DebugService);
+setMacroManager(defaultSharkyBot, myDebug);
+defaultSharkyBot.Managers = NewManagers(defaultSharkyBot, myDebug, gameConnection);
+
+var billyBot = defaultSharkyBot.CreateBot(defaultSharkyBot.Managers, myDebug);
 
 var mapName = "HardwireAIE.SC2Map";
 var myRace = Race.Protoss;
 if (args.Length == 0)
-    gameConnection.RunSinglePlayer(billyBot, mapName, myRace, Race.Zerg, Difficulty.Hard, AIBuild.RandomBuild).Wait();
+    
+    gameConnection.RunSinglePlayer(billyBot, mapName, myRace, Race.Zerg, Difficulty.VeryEasy, AIBuild.RandomBuild).Wait();
 else
     gameConnection.RunLadder(billyBot, myRace, args).Wait();
 
-static void setMacroManager(DefaultSharkyBot? defaultSharkyBot)
+
+static IManager setMapManager(DefaultSharkyBot ? defaultSharkyBot, DebugServiceCopy myDebug)
 {
-    var protossBuildingPlacement = new ProtossBuildingPlacementCopy(defaultSharkyBot);
+    return new MapManagerCopy(defaultSharkyBot.MapData, defaultSharkyBot.ActiveUnitData, defaultSharkyBot.SharkyOptions, defaultSharkyBot.SharkyUnitData, defaultSharkyBot.DebugService, myDebug, defaultSharkyBot.WallDataService);
+}
+
+static void setMacroManager(DefaultSharkyBot? defaultSharkyBot, DebugServiceCopy myDebug)
+{
+    var protossBuildingPlacement = new ProtossBuildingPlacementCopy(defaultSharkyBot, myDebug);
     defaultSharkyBot.ProtossBuildingPlacement = protossBuildingPlacement;
 
     var buildingPlacement = new BuildingPlacement(protossBuildingPlacement, defaultSharkyBot.TerranBuildingPlacement, defaultSharkyBot.ZergBuildingPlacement, defaultSharkyBot.ResourceCenterLocator, defaultSharkyBot.BaseData, defaultSharkyBot.SharkyUnitData, defaultSharkyBot.MacroData, defaultSharkyBot.UnitCountService);
@@ -66,12 +76,12 @@ static void setMacroManager(DefaultSharkyBot? defaultSharkyBot)
 
 }
 
-static List<IManager> NewManagers(DefaultSharkyBot? defaultSharkyBot)
+static List<IManager> NewManagers(DefaultSharkyBot? defaultSharkyBot, DebugServiceCopy myDebug, GameConnection gameConnection)
 {
     var Managers = new List<IManager>();
-    Managers.Add(defaultSharkyBot.DebugManager);
+    Managers.Add(new DebugManager(gameConnection, defaultSharkyBot.SharkyOptions, myDebug)); //changed
     Managers.Add(defaultSharkyBot.UnitDataManager);
-    Managers.Add(defaultSharkyBot.MapManager);
+    Managers.Add(setMapManager(defaultSharkyBot, myDebug)); //replaced old mapmanager
     Managers.Add(defaultSharkyBot.UnitManager);
     Managers.Add(defaultSharkyBot.EnemyRaceManager);
     Managers.Add(defaultSharkyBot.BaseManager);

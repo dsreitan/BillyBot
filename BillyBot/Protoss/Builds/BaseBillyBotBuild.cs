@@ -26,9 +26,9 @@ public class BaseBillyBotBuild : ProtossSharkyBuild
     }
 
 
-    protected void debugChat(ResponseObservation observation)
-    {
-
+    protected void debugChat(ResponseObservation observation) { 
+    
+  
         var chat = observation.Chat;
         foreach (var chatReceived in chat)
         {

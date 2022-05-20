@@ -14,7 +14,7 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
         ActiveUnitData ActiveUnitData;
         SharkyUnitData SharkyUnitData;
         BaseData BaseData;
-        DebugService DebugService;
+        DebugServiceCopy DebugService;
         MapDataService MapDataService;
         BuildingService BuildingService;
         IBuildingPlacement WallOffPlacement;
@@ -34,7 +34,7 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
         private Point2D? BuildPoint;
         bool requireVision = false;
 
-        public ProtossBuildingPlacementCopy(ActiveUnitData activeUnitData, SharkyUnitData sharkyUnitData, BaseData baseData, DebugService debugService, MapDataService mapDataService, BuildingService buildingService, IBuildingPlacement wallOffPlacement, ProtossPylonGridPlacement protossPylonGridPlacement, ProtossProductionGridPlacement protossProductionGridPlacement, IBuildingPlacement protectNexusPylonPlacement, TargetingData targetingData, IBuildingPlacement protectNexusCannonPlacement, BuildOptions buildOptions, IBuildingPlacement protossDefensiveGridPlacement, IBuildingPlacement protossProxyGridPlacement)
+        public ProtossBuildingPlacementCopy(ActiveUnitData activeUnitData, SharkyUnitData sharkyUnitData, BaseData baseData, DebugServiceCopy debugService, MapDataService mapDataService, BuildingService buildingService, IBuildingPlacement wallOffPlacement, ProtossPylonGridPlacement protossPylonGridPlacement, ProtossProductionGridPlacement protossProductionGridPlacement, IBuildingPlacement protectNexusPylonPlacement, TargetingData targetingData, IBuildingPlacement protectNexusCannonPlacement, BuildOptions buildOptions, IBuildingPlacement protossDefensiveGridPlacement, IBuildingPlacement protossProxyGridPlacement)
         {
             ActiveUnitData = activeUnitData;
             SharkyUnitData = sharkyUnitData;
@@ -53,12 +53,12 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
             ProtossProxyGridPlacement = protossProxyGridPlacement;
         }
 
-        public ProtossBuildingPlacementCopy(DefaultSharkyBot defaultSharkyBot)
+        public ProtossBuildingPlacementCopy(DefaultSharkyBot defaultSharkyBot, DebugServiceCopy debugService)
         {
             ActiveUnitData = defaultSharkyBot.ActiveUnitData;
             SharkyUnitData = defaultSharkyBot.SharkyUnitData;
             BaseData = defaultSharkyBot.BaseData;
-            DebugService = defaultSharkyBot.DebugService;
+            DebugService = debugService;
             MapDataService = defaultSharkyBot.MapDataService;
             BuildingService = defaultSharkyBot.BuildingService;
             WallOffPlacement = defaultSharkyBot.WallOffPlacement;
@@ -70,12 +70,19 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
             BuildOptions = defaultSharkyBot.BuildOptions;
             ProtossDefensiveGridPlacement = defaultSharkyBot.ProtossDefensiveGridPlacement;
             ProtossProxyGridPlacement = defaultSharkyBot.ProtossProxyGridPlacement;
-
         }
+
 
         //Finds placement of Non-Nexus
         public Point2D FindPlacement(Point2D referencePoint, UnitTypes unitType, int size, bool ignoreResourceProximity = false, float maxDistance = 50, bool requireSameHeight = false, WallOffType wallOffType = WallOffType.None, bool requireVision = false, bool allowBlockBase = false)
         {
+            
+            
+            if (BuildPoint != null)
+            {
+                this.BuildPoint = null;
+                DebugService.allBlockedPaths = new HashSet<Point2D>();
+            } 
             this.referencePoint = referencePoint;
             this.maxDistance = maxDistance;
             this.wallOffType = wallOffType;
@@ -85,21 +92,29 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
 
             if (this.wallOffType != WallOffType.None) {
                 BuildPoint = handleWallOff(unitType, size, ignoreResourceProximity, requireSameHeight, allowBlockBase);
-                if (BuildPoint != null)
-                return BuildPoint;
+                if (BuildPoint != null) {
+                    DebugService.DrawSphere(new Point { X=BuildPoint.X, Y=BuildPoint.Y, Z=12 }, size/2, new Color { R=255, G=0, B=0 });
+                    return BuildPoint;
+                }
             }
 
             if (unitType == UnitTypes.PROTOSS_PYLON)
             {  
                 BuildPoint = FindPylonPlacement(requireSameHeight, allowBlockBase);
-                if(BuildPoint!=null)
-                return BuildPoint;
+                if (BuildPoint != null)
+                {
+                    DebugService.DrawSphere(new Point { X = BuildPoint.X, Y = BuildPoint.Y, Z = 12 }, size , new Color { R = 255, G = 0, B = 0 });
+                    return BuildPoint;
+                }
             }
             else
             {
                 BuildPoint = FindProductionPlacement(size, allowBlockBase);
                 if (BuildPoint != null)
-                return BuildPoint;
+                {
+                    DebugService.DrawSphere(new Point { X = BuildPoint.X, Y = BuildPoint.Y, Z = 12 }, size / 2, new Color { R = 255, G = 0, B = 0 });
+                    return BuildPoint;
+                }
             }
             return BuildPoint;
         }
@@ -132,7 +147,7 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
             return FindPlacement(referencePoint, unitType, size, ignoreResourceProximity, maxDistance, requireSameHeight, WallOffType.None, requireVision, allowBlockBase);
         }
 
-        public Point2D FindPylonPlacement(bool requireSameHeight = false, bool allowBlockBase = false)
+        private Point2D FindPylonPlacement(bool requireSameHeight = false, bool allowBlockBase = false)
         {
             if (!allowBlockBase)
             {
@@ -144,12 +159,11 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
             }
         }
 
-
         private Point2D FindPylonPlacementNoBlock(bool requireSameHeight = false)
         {
             var spot = ProtossPylonGridPlacement.FindPlacement(referencePoint, maxDistance, minimumMineralProximinity);
 
-            if (spot != null) {  }
+            if (spot != null) { return spot; }
             else
             {
                 spot = FindPylonPlacementProtectNexus();
@@ -208,6 +222,11 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
             return null;
 
         }
+
+
+
+
+
 
         private Point2D FindPylonPlacementProtectNexus()
         {
@@ -277,24 +296,26 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
             return null;
         }
 
-        
 
 
-        public Point2D FindProductionPlacement(int size, bool allowBlockBase = true)
+
+        private Point2D FindProductionPlacement(int size, bool allowBlockBase = true)
         {
             BuildPoint = null;
+
             //
-            if (findNonBlockingNonPylonSpotSizeThree(size, allowBlockBase))
-                if(BuildPoint!=null) return BuildPoint;
-            if (findNonPylonSizeTwo(size, allowBlockBase))
-                if (BuildPoint != null) return BuildPoint;
-            if (findBlockingNonPylonSizeThree(size, allowBlockBase))
-                if (BuildPoint != null) return BuildPoint;
+            //if (findNonBlockingNonPylonSpotSizeThree(size, allowBlockBase))
+            //    if(BuildPoint!=null) return BuildPoint;
+            //if (findNonPylonSizeTwo(size, allowBlockBase))
+            //    if (BuildPoint != null) return BuildPoint;
+            //if (findBlockingNonPylonSizeThree(size, allowBlockBase))
+            //    if (BuildPoint != null) return BuildPoint;
+
             if(trySimple(size, allowBlockBase))
                 if (BuildPoint != null) return BuildPoint;
 
-
-            return FindProductionPlacementTryHarder(size, allowBlockBase);
+            //FindProductionPlacementTryHarder(size, allowBlockBase);
+            return null;
         }
 
         private bool findNonBlockingNonPylonSpotSizeThree(float size, bool allowBlockBase)
@@ -368,7 +389,7 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
             var pSX = powerSourcePoint.X;
             var pSY = powerSourcePoint.Y;
 
-            var radius = size / 2f;
+            var radius = 1 + (size / 2f);
             var powerRadius = 7 - (size / 2f);
 
             // start at 12 o'clock then rotate around 12 times, increase radius by 1 until it's more than powerRadius
@@ -398,10 +419,11 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
         }
 
 
+        //Radius starts at 1 + halfsize, should form a 360* circle around the powersource
         private bool rotateByRadius(UnitCommander? powerSource, float size, bool allowBlockBase, float radius, float pSX, float pSY)
         {
             var fullCircle = Math.PI * 2;
-            var sliceSize = fullCircle / 24.0;
+            var sliceSize = fullCircle / 24.0; //15*
             var angle = 0.0;
             while (angle + (sliceSize / 2) < fullCircle)
             {
@@ -411,7 +433,7 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
                 var tooClose = IsToCloseToBaseOrWall(allowBlockBase, vector);
 
 
-                if (!tooClose && !IsBlocked(pointInRotation, size, minimumMineralProximinity))
+                if (!tooClose && !IsBlocked(pointInRotation, size))
                 {
                     var mineralFields = ActiveUnitData.NeutralUnits.Where((KeyValuePair<ulong, UnitCalculation> u) => SharkyUnitData.MineralFieldTypes.Contains((UnitTypes)u.Value.Unit.UnitType));
                     var squared = (1 + minimumMineralProximinity + (size / 2f)) * (1 + minimumMineralProximinity + (size / 2f));
@@ -436,17 +458,46 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
         private Point2D pointInRotation(float radius, double angle, float size, float pSX, float pSY)
         {
             var point = new Point2D { X = pSX + (float)(radius * Math.Cos(angle)), Y = pSY + (float)(radius * Math.Sin(angle)) };
-            point = new Point2D { X = (float)Math.Round(point.X * 2f) / 2f, Y = (float)(Math.Round(point.Y * 2f) / 2f) };
+
+
+             point = new Point2D { X = (float)Math.Round(point.X * 2f) / 2f, Y = (float)(Math.Round(point.Y * 2f) / 2f) };
+
+            var test = Math.Cos(angle);
+
 
             if (size == 3)
             {
-                if (point.X % 1 != .5)
-                {
-                    point.X -= .5f;
+                var firstQuadrant = Math.PI / 2;
+                var secoundQuadrant = Math.PI;
+                var thirdQuadrant = Math.PI + (Math.PI / 2);
+                var fourthQuadrant = Math.PI * 2;
+                //This allways rounds outwards from the center of circle
+                if (angle < firstQuadrant) { 
+                    if (point.X % 1 != .5)
+                        point.X += .5f;
+                    if (point.Y % 1 != .5)
+                        point.Y += .5f;
                 }
-                if (point.Y % 1 != .5)
+                else if (angle < secoundQuadrant)
                 {
-                    point.Y -= .5f;
+                    if (point.X % 1 != .5)
+                        point.X -= .5f;
+                    if (point.Y % 1 != .5)
+                        point.Y += .5f;
+                }
+                else if (angle < thirdQuadrant)
+                {
+                    if (point.X % 1 != .5)
+                        point.X -= .5f;
+                    if (point.Y % 1 != .5)
+                        point.Y -= .5f;
+                }
+                else if (angle < fourthQuadrant)
+                {
+                    if (point.X % 1 != .5)
+                        point.X += .5f;
+                    if (point.Y % 1 != .5)
+                        point.Y -= .5f;
                 }
             }
             else if (size == 2)
@@ -463,6 +514,8 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
             return point;
         }
 
+        
+
         private bool IsToCloseToBaseOrWall(bool allowBlockBase, Vector2 vector)
         {
             if (!BuildOptions.AllowBlockWall && MapDataService.MapData?.WallData != null && MapDataService.MapData.WallData.Any(d => d.FullDepotWall != null && d.FullDepotWall.Any(p => Vector2.DistanceSquared(new Vector2(p.X, p.Y), vector) < 25)))
@@ -477,13 +530,12 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
             return false;
         }
 
-        private bool IsBlocked(Point2D pointInRotation, float size, float minimumMineralProximinity)
+        private bool IsBlocked(Point2D pointInRotation, float size)
         {
-            //DebugService.SetCamera(new Point { X = pointInRotation.X, Y = pointInRotation.Y, Z = 12 });
-            float padding = 0.5f;
-            bool sameHeight = BuildingService.SameHeight(pointInRotation.X, pointInRotation.Y, size + padding / 2.0f);
+            float padding = 0;
+            bool sameHeight = BuildingService.SameHeight(pointInRotation.X, pointInRotation.Y, (size + padding) / 2.0f);
             bool isProximityBlocked = !(minimumMineralProximinity == 0 ||
-                    !BuildingService.BlocksResourceCenter(pointInRotation.X, pointInRotation.Y, size + padding / 2.0f));
+                    !BuildingService.BlocksResourceCenter(pointInRotation.X, pointInRotation.Y, (size + padding) / 2.0f));
             bool buildableArea = BuildingService.AreaBuildable(pointInRotation.X, pointInRotation.Y, (size + padding) / 2.0f); //if inside map bonudary returns false
             bool blocked = BuildingService.Blocked(pointInRotation.X, pointInRotation.Y, (size + padding) / 2.0f); //checks if another building blocks it with 0.5 more radius
 
@@ -495,17 +547,30 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
 
             if (sameHeight)
             {
-                if (isProximityBlocked || !buildableArea || blocked || hasAnyCreep)
+                if (isProximityBlocked || !buildableArea || blocked || hasAnyCreep || blocksPath)
                     isBlocked = true;
             }
             else isBlocked = true;
 
+            if (isBlocked) {
+                if (DebugService.allBlockedPaths.Count < 200)
+                {
+                    if (DebugService.allBlockedPaths.Contains(pointInRotation)){ 
+                        DebugService.allBlockedPaths.Remove(pointInRotation);
+                    }
+                    DebugService.allBlockedPaths.Add((pointInRotation));
+
+
+                }
+            }
+
+            
             return isBlocked;
         }
 
 
 
-        Point2D FindProductionPlacementTryHarder(float size, bool allowBlockBase)
+        private Point2D FindProductionPlacementTryHarder(float size, bool allowBlockBase)
         {
             var targetVector = new Vector2(referencePoint.X, referencePoint.Y);
             var powerSources = ActiveUnitData.Commanders.Values.Where(c => c.UnitCalculation.Unit.UnitType == (uint)UnitTypes.PROTOSS_PYLON && c.UnitCalculation.Unit.BuildProgress == 1).OrderBy(c => Vector2.DistanceSquared(c.UnitCalculation.Position, targetVector));
