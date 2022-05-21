@@ -532,7 +532,7 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
 
         private bool IsBlocked(Point2D pointInRotation, float size)
         {
-            float padding = 0;
+            float padding = 0.5f;
             bool sameHeight = BuildingService.SameHeight(pointInRotation.X, pointInRotation.Y, (size + padding) / 2.0f);
             bool isProximityBlocked = !(minimumMineralProximinity == 0 ||
                     !BuildingService.BlocksResourceCenter(pointInRotation.X, pointInRotation.Y, (size + padding) / 2.0f));
@@ -547,7 +547,7 @@ namespace BillyBot.Sharky.Builds.BuildingPlacement
 
             if (sameHeight)
             {
-                if (isProximityBlocked || !buildableArea || blocked || hasAnyCreep || blocksPath)
+                if (isProximityBlocked || !buildableArea || blocked || hasAnyCreep)
                     isBlocked = true;
             }
             else isBlocked = true;

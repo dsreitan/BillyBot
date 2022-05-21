@@ -12,6 +12,13 @@ public class WarpPrismSupportMicroController : WarpPrismMicroController
 
     public override List<Action> Support(UnitCommander commander, IEnumerable<UnitCommander> supportTargets, Point2D target, Point2D defensivePoint, Point2D groupCenter, int frame)
     {
+        if (!defensivePoint.HasX)
+            defensivePoint = TargetingData.MainDefensePoint;
+        if (!target.HasX)
+            target = TargetingData.EnemyMainBasePoint;
+        if (!groupCenter.HasX)
+            groupCenter = TargetingData.NaturalBasePoint;
+
         SupportArmy(commander, target, defensivePoint, groupCenter, frame, out var actions);
 
         return actions;

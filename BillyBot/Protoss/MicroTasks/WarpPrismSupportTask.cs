@@ -43,6 +43,7 @@ public class WarpPrismSupportTask : MicroTask
 
     private IEnumerable<UnitCommander> GetSupportTargets(IEnumerable<UnitCommander> commanders)
     {
+        
         return commanders.Where(c => _supportTargetTypes.Contains((UnitTypes) c.UnitCalculation.Unit.UnitType));
     }
 
@@ -65,8 +66,16 @@ public class WarpPrismSupportTask : MicroTask
         if (warpPrism == null)
             return new List<Action>();
 
-        var supportTargets = GetSupportTargets(UnitCommanders);
+        if (warpPrism.LastAbility.Equals(Abilities.MORPH_WARPPRISMPHASINGMODE))
+            return warpPrism.Order(frame, Abilities.MORPH_WARPPRISMTRANSPORTMODE);
 
+        
+
+        var supportTargets = GetSupportTargets(UnitCommanders);
+        if (!supportTargets.Any())
+        {
+            return new List<Action>();
+        }
         //TODO: set locations
         var target = new Point2D();
         var defensivePoint = new Point2D();
