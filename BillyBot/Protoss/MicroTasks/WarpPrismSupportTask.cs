@@ -81,7 +81,9 @@ public class WarpPrismSupportTask : MicroTask
         var defensivePoint = new Point2D();
         var groupCenter = new Point2D();
 
-        return _warpPrismMicroController.Support(warpPrism, supportTargets, target, defensivePoint, groupCenter, frame);
+        var actions = _warpPrismMicroController.Support(warpPrism, supportTargets, target, defensivePoint, groupCenter, frame);
+        if (actions == null) return new List<Action>();
+        return actions;
     }
 
     private UnitCommander? GetWarpPrism(IEnumerable<UnitCommander> unitCommanders)

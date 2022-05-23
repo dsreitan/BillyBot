@@ -88,7 +88,7 @@ public class DtRobo : BaseBillyBotBuild
         {
             MicroTaskData.MicroTasks[nameof(WarpPrismInEnemyBaseTask)].Disable();
             MicroTaskData.MicroTasks[nameof(WarpPrismSupportTask)].Enable();
-            MakeGateways(10);
+            MakeGateways(6);
             ChronoData.ChronodUnits = new()
             {
                 UnitTypes.PROTOSS_IMMORTAL,
@@ -97,6 +97,7 @@ public class DtRobo : BaseBillyBotBuild
 
             MacroData.DesiredTechCounts[UnitTypes.PROTOSS_FORGE]=1;
             MacroData.DesiredUpgrades[Upgrades.PROTOSSAIRWEAPONSLEVEL1] = true;
+            MacroData.DesiredUpgrades[Upgrades.CHARGE] = true;
             MacroData.DesiredProductionCounts[UnitTypes.PROTOSS_ROBOTICSFACILITY] = 2;
             MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_IMMORTAL] = 10;
             MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_ZEALOT] = 20;
@@ -107,6 +108,7 @@ public class DtRobo : BaseBillyBotBuild
             if (UnitCountService.Count(UnitTypes.PROTOSS_DARKTEMPLAR) > 6)
                 MacroData.DesiredUnitCounts[UnitTypes.PROTOSS_ARCHON] = 5;
 
+            
 
 
         }

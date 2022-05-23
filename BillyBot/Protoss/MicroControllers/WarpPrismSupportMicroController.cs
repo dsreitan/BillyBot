@@ -20,6 +20,7 @@ public class WarpPrismSupportMicroController : WarpPrismMicroController
             groupCenter = TargetingData.NaturalBasePoint;
 
         SupportArmy(commander, target, defensivePoint, groupCenter, frame, out var actions);
+        if(actions == null) return new List<Action>();
 
         return actions;
     }
