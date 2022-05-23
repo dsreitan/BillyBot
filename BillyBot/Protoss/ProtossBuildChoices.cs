@@ -1,8 +1,6 @@
 ﻿using BillyBot.Protoss.Builds;
 using BillyBot.Protoss.MicroTasks;
-using SC2APIProtocol;
 using Sharky.Builds;
-using Sharky.DefaultBot;
 
 namespace BillyBot.Protoss;
 
@@ -19,8 +17,7 @@ public class ProtossBuildChoices
         var builds = new Dictionary<string, ISharkyBuild>
         {
             [macroOpener.Name()] = macroOpener,
-            [dtRobo.Name()] = dtRobo,
-            [roboSentry.Name()] = roboSentry
+            [dtRobo.Name()] = dtRobo
         };
 
         var versusEverything = new List<List<string>>
